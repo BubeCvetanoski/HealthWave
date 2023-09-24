@@ -76,13 +76,12 @@ fun FoodItemHeader(
                         painter = rememberImagePainter(
                             data = food.imageUrl,
                             builder = {
-                                crossfade(true)
                                 error(R.drawable.no_image_preview)
                                 fallback(R.drawable.no_image_preview)
                             }
                         ),
                         contentDescription = food.name,
-                        contentScale = ContentScale.Fit,
+                        contentScale = ContentScale.FillBounds,
                         alignment = Alignment.Center,
                         modifier = Modifier
                             .size(100.dp)

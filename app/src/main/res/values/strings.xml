@@ -56,6 +56,7 @@
 
     <!--Calorie Tracker VIEWMODEL-->
     <string name="check_your_internet">Check your internet connection please!</string>
+    <string name="no_food_found">There is no food found for this name.</string>
 
     <!--Custom Table-->
     <string name="exercise_name">Exercise\'s name</string>
@@ -77,7 +78,7 @@
     <string name="water_icon">Water icon</string>
 
     <!--FoodItemCardSearched-->
-    <string name="calories_per_100_grams"> calories per 100 grams:</string>
+    <string name="calories_per_100_grams">calories per 100 grams:</string>
 
     <!--UpdateName Dialog-->
     <string name="enter_details">Enter details</string>

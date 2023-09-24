@@ -107,7 +107,7 @@ fun FoodItemCardSearched(
                     .clip(RoundedCornerShape(5.dp))
             )
             Text(
-                text = food.calories100g.toString() + stringResource(id = R.string.calories_per_100_grams),
+                text = food.calories100g.toString() + " " + stringResource(id = R.string.calories_per_100_grams),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )

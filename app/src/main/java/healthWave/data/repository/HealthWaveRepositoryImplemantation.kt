@@ -29,12 +29,15 @@ class HealthWaveRepositoryImplemantation @Inject constructor(
     override fun getUser(): Flow<User> {
         return dao.getUser()
     }
+
     override suspend fun insertUser(user: User) {
         return dao.insertUser(user)
     }
+
     override suspend fun updateUser(user: User) {
         return dao.updateUser(user)
     }
+
     override suspend fun updateUserFirstAndLastName(firstName: String, lastName: String) {
         return dao.updateUserFirstAndLastName(firstName, lastName)
     }
@@ -44,9 +47,11 @@ class HealthWaveRepositoryImplemantation @Inject constructor(
     override suspend fun insertExercise(exercise: Exercise) {
         return dao.insertExercise(exercise)
     }
+
     override fun getExercisesByDate(date: String): Flow<List<Exercise>> {
         return dao.getExercisesByDate(date)
     }
+
     override suspend fun updateExerciseByNumberAndDate(
         name: String,
         sets: String,
@@ -64,6 +69,7 @@ class HealthWaveRepositoryImplemantation @Inject constructor(
             date
         )
     }
+
     override suspend fun deleteAllExercisesByDate(date: String) {
         return dao.deleteAllExercisesByDate(date)
     }
@@ -83,18 +89,9 @@ class HealthWaveRepositoryImplemantation @Inject constructor(
             )
             Result.success(
                 searchDto.products
-                    .filter {
-                        val calculatedCalories =
-                            it.nutriments.carbohydrates100g * 4f +
-                                    it.nutriments.proteins100g * 4f +
-                                    it.nutriments.fat100g * 9f
-                        val lowerBound = calculatedCalories * 0.99f
-                        val upperBound = calculatedCalories * 1.01f
-                        it.nutriments.energyKcal100g in (lowerBound..upperBound)
-                    }
                     .mapNotNull { it.toFoodNutrimentsInfo() }
             )
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             e.printStackTrace()
             Result.failure(e)
         }

@@ -337,8 +337,8 @@ class FoodViewModel @Inject constructor(
                     UiText.StringResource(resId = R.string.successfully_deleted)
                 )
             )
-
             getFoodOverviewByDate(date = date)
+            shouldEmitValue = false
         }
     }
 
@@ -376,6 +376,13 @@ class FoodViewModel @Inject constructor(
             foodUseCases
                 .searchFood(foodState.query)
                 .onSuccess { foods ->
+                    if (foods.isEmpty()) {
+                        _uiEvent.send(
+                            UiEvent.ShowToast(
+                                UiText.StringResource(resId = R.string.no_food_found)
+                            )
+                        )
+                    }
                     foodState = foodState.copy(
                         foodNutrimentsInfo = foods.map {
                             FoodNutrimentsInfoState(it)
@@ -385,38 +392,47 @@ class FoodViewModel @Inject constructor(
                     )
                 }
                 .onFailure {
+                    shouldEmitValue = true
+                    getFoodByNameJob?.cancel()
                     getFoodByNameJob = foodUseCases
                         .getFoodByName(foodState.query)
                         .onEach { foods ->
-                            if (foods.isEmpty()) {
+                            if (shouldEmitValue) {
+                                if (foods.isEmpty()) {
+                                    foodState = foodState.copy(
+                                        isLoading = false,
+                                        query = ""
+                                    )
+                                    _uiEvent.send(
+                                        UiEvent.ShowToast(
+                                            UiText.StringResource(resId = R.string.check_your_internet)
+                                        )
+                                    )
+                                    return@onEach
+                                }
+                                foodState = foodState.copy(
+                                    foodNutrimentsInfo = foods.map { food ->
+                                        FoodNutrimentsInfoState(
+                                            food = FoodNutrimentsInfo(
+                                                id = food.id,
+                                                name = food.name,
+                                                imageUrl = food.imageUrl,
+                                                calories100g = food.caloriesPer100g,
+                                                carbs100g = food.carbsPer100g,
+                                                protein100g = food.proteinPer100g,
+                                                fat100g = food.fatPer100g
+                                            )
+                                        )
+                                    },
+                                    isLoading = false,
+                                    query = ""
+                                )
+                            } else {
                                 foodState = foodState.copy(
                                     isLoading = false,
                                     query = ""
                                 )
-                                _uiEvent.send(
-                                    UiEvent.ShowToast(
-                                        UiText.StringResource(resId = R.string.check_your_internet)
-                                    )
-                                )
                             }
-                            foodState = foodState.copy(
-                                foodNutrimentsInfo = foods.map { food ->
-                                    FoodNutrimentsInfoState(
-                                        food = FoodNutrimentsInfo(
-                                            id = food.id,
-                                            name = food.name,
-                                            imageUrl = food.imageUrl,
-                                            calories100g = food.caloriesPer100g,
-                                            carbs100g = food.carbsPer100g,
-                                            protein100g = food.proteinPer100g,
-                                            fat100g = food.fatPer100g
-                                        ),
-                                        amount = food.amount.toString()
-                                    )
-                                },
-                                isLoading = false,
-                                query = ""
-                            )
                         }.launchIn(viewModelScope)
                 }
         }
