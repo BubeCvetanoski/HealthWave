@@ -16,10 +16,10 @@ class HealthWaveApp : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        createMotivationNotificationChannel()
+        createMotivationalNotificationChannel()
     }
 
-    private fun createMotivationNotificationChannel() {
+    private fun createMotivationalNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 Constants.MOTIVATIONAL_NOTIFICATIONS_CHANNEL_ID,
