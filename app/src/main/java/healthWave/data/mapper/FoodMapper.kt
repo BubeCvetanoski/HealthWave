@@ -48,7 +48,7 @@ fun Food.toFoodEntity(): FoodEntity {
 fun Product.toFoodNutrimentsInfo(): FoodNutrimentsInfo? {
     val carbs100g = nutriments.carbohydrates100g.roundToInt()
     val protein100g = nutriments.proteins100g.roundToInt()
-    val fat100g = nutriments.proteins100g.roundToInt()
+    val fat100g = nutriments.fat100g.roundToInt()
     val calories100g = nutriments.energyKcal100g.roundToInt()
     return FoodNutrimentsInfo(
         name = productName ?: return null,

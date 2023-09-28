@@ -98,7 +98,7 @@ fun CalorieTrackerScreen(
     val backgroundColor = remember { mutableStateOf(Color.Unspecified) }
     val itemsColor = remember { mutableStateOf(Color.Unspecified) }
 
-    userGoalCalories.value = userViewModel.userState.value.calories
+    userGoalCalories.value = userViewModel.getGoalCalories()
     firstLevelColor.value = userViewModel.getHealthWaveFirstLevelColor()
     baseColor.value = userViewModel.getHealthWaveColors().first
     detailsColor.value = userViewModel.getHealthWaveColors().second

@@ -72,7 +72,7 @@ fun WaterHeaderItemAdded(
             )
             Spacer(modifier = Modifier.height(5.dp))
             Text(
-                text = stringResource(id = R.string.click_here_to_remove),
+                text = stringResource(id = R.string.click_here_to_remove_water),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,

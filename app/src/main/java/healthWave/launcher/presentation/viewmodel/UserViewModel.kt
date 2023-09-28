@@ -113,6 +113,10 @@ class UserViewModel @Inject constructor(
         )
     }
 
+    fun getGoalCalories(): String {
+        return _userState.value.calories
+    }
+
     fun getHealthWaveColors(): Pair<Color, Color> {
         return when (_userState.value.gender) {
             "Male" -> Pair(blue_color_level_2, blue_color_level_6)

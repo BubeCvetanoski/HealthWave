@@ -81,7 +81,7 @@ fun FoodItemHeader(
                             }
                         ),
                         contentDescription = food.name,
-                        contentScale = ContentScale.FillBounds,
+                        contentScale = ContentScale.Fit,
                         alignment = Alignment.Center,
                         modifier = Modifier
                             .size(100.dp)

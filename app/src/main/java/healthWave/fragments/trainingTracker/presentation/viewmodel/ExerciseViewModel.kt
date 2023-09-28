@@ -49,6 +49,7 @@ class ExerciseViewModel @Inject constructor(
             }
 
             _exerciseState.value = exerciseState.value.copy(
+                exercises = exercises,
                 isLoading = false
             )
 
@@ -89,6 +90,7 @@ class ExerciseViewModel @Inject constructor(
                 )
             }
             _exerciseState.value = exerciseState.value.copy(
+                exercises = exercises,
                 isLoading = false
             )
         }

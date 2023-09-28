@@ -23,7 +23,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -65,7 +64,6 @@ fun TrainingTrackerScreen(
 ) {
     val context = LocalContext.current
     val state = exerciseViewModel.exerciseState.value
-    val displayedExercises = remember { mutableStateListOf<Exercise>() }
 
     val dateDialogState = rememberMaterialDialogState()
     var pickADateText by remember {
@@ -115,18 +113,23 @@ fun TrainingTrackerScreen(
         selectedIndexExercises = index
         numberOfExercises = item.substringBefore(" Exercise").toInt()
 
-        if (numberOfExercises < displayedExercises.size) {
-            numberOfExercises = displayedExercises.size
-            selectedIndexExercises = displayedExercises.size - 1
+        if (numberOfExercises != exerciseViewModel.tableCellData!!.size) {
+
+            if (numberOfExercises < state.exercises.size) {
+
+                numberOfExercises = state.exercises.size
+                selectedIndexExercises = state.exercises.size - 1
+            }
+
+            // Check if the number of exercises has changed -> update the table
+            exerciseViewModel.tableCellData = updateTableCellData(
+                initializeTableCellData(
+                    numberOfExercises,
+                    TableCellDataItem("", "")
+                ),
+                state.exercises
+            )
         }
-        // Check if the number of exercises has changed -> update the table
-        exerciseViewModel.tableCellData = updateTableCellData(
-            initializeTableCellData(
-                numberOfExercises,
-                TableCellDataItem("", "")
-            ),
-            state.exercises
-        )
     }
 
     val onDatePickerDateChanged: (newDate: LocalDate) -> Unit = { newDate ->
@@ -138,33 +141,19 @@ fun TrainingTrackerScreen(
 
     LaunchedEffect(key1 = state.exercises) {
 
-        numberOfExercises = state.exercises.size
-        selectedIndexExercises = numberOfExercises - 1
+        if (numberOfExercises != state.exercises.size) {
 
-        exerciseViewModel.tableCellData = updateTableCellData(
-            initializeTableCellData(
-                numberOfExercises,
-                TableCellDataItem("", "")
-            ),
-            state.exercises
-        )
+            numberOfExercises = state.exercises.size
+            selectedIndexExercises = state.exercises.size - 1
 
-        displayedExercises.clear()
-        for (i in 0 until numberOfExercises) {
-            val name = exerciseViewModel.tableCellData!![i][0].value.currentText
-            val sets = exerciseViewModel.tableCellData!![i][1].value.currentText
-            val reps = exerciseViewModel.tableCellData!![i][2].value.currentText
-            val load = exerciseViewModel.tableCellData!![i][3].value.currentText
-
-            val exercise = Exercise(
-                number = (i + 1).toString(),
-                name = name,
-                sets = sets,
-                reps = reps,
-                load = load,
-                date = pickADateText
+            // Check if the number of exercises has changed -> update the table
+            exerciseViewModel.tableCellData = updateTableCellData(
+                initializeTableCellData(
+                    numberOfExercises,
+                    TableCellDataItem("", "")
+                ),
+                state.exercises
             )
-            displayedExercises.add(exercise)
         }
     }
 
@@ -187,24 +176,6 @@ fun TrainingTrackerScreen(
                 ),
                 state.exercises
             )
-
-            displayedExercises.clear()
-            for (i in 0 until numberOfExercises) {
-                val name = exerciseViewModel.tableCellData!![i][0].value.currentText
-                val sets = exerciseViewModel.tableCellData!![i][1].value.currentText
-                val reps = exerciseViewModel.tableCellData!![i][2].value.currentText
-                val load = exerciseViewModel.tableCellData!![i][3].value.currentText
-
-                val exercise = Exercise(
-                    number = (i + 1).toString(),
-                    name = name,
-                    sets = sets,
-                    reps = reps,
-                    load = load,
-                    date = pickADateText
-                )
-                displayedExercises.add(exercise)
-            }
 
         } else {
             exerciseViewModel.tableCellData =
@@ -309,7 +280,7 @@ fun TrainingTrackerScreen(
                             date = formattedDate,
                             rows = numberOfExercises,
                             tableCellData = tableCellData,
-                            displayedExercises = displayedExercises,
+                            exerciseState = state,
                             exerciseViewModel = exerciseViewModel
                         )
                     }

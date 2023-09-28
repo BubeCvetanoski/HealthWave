@@ -26,7 +26,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -45,6 +44,7 @@ import healthWave.core.util.HelperFunctions.Companion.showToast
 import healthWave.core.util.UiEvent
 import healthWave.data.local.database.entity.Exercise
 import healthWave.fragments.trainingTracker.presentation.screen.TableCellDataItem
+import healthWave.fragments.trainingTracker.presentation.viewmodel.ExerciseState
 import healthWave.fragments.trainingTracker.presentation.viewmodel.ExerciseViewModel
 import healthWave.ui.theme.black_color
 import healthWave.ui.theme.transparent_color
@@ -56,7 +56,7 @@ fun CustomTable(
     date: String,
     rows: Int,
     tableCellData: List<List<MutableState<TableCellDataItem>>>,
-    displayedExercises: SnapshotStateList<Exercise>,
+    exerciseState: ExerciseState,
     exerciseViewModel: ExerciseViewModel
 ) {
     val context = LocalContext.current
@@ -178,7 +178,6 @@ fun CustomTable(
                             }
                         }) {
                         exerciseViewModel.deleteAllExercisesByDate(date)
-                        displayedExercises.clear()
                         return@FloatingActionButton
                     }
 
@@ -191,12 +190,11 @@ fun CustomTable(
 
                         // Check if any of the values in the row are not blank
                         if (name.isNotBlank() || sets.isNotBlank() || reps.isNotBlank() || load.isNotBlank()) {
-                            val existingExerciseIndex =
-                                displayedExercises.indexOfFirst { it.number == number }
+                            val existingExerciseIndex = exerciseState.exercises.indexOfFirst { it.number == number }
 
                             if (existingExerciseIndex != -1) {
                                 // Exercise with the same number exists, update it
-                                val existingExercise = displayedExercises[existingExerciseIndex]
+                                val existingExercise = exerciseState.exercises[existingExerciseIndex]
                                 val exerciseToUpdate = Exercise(
                                     number = number,
                                     name = name,
@@ -207,15 +205,14 @@ fun CustomTable(
                                 )
 
                                 if (existingExercise != exerciseToUpdate) {
-                                    displayedExercises[existingExerciseIndex] =
-                                        exerciseToUpdate //Update the displayed exercise's data container
+
                                     exercisesToUpdate.add(exerciseToUpdate) //Fill the list to update the database
+
                                     //Update the values in that row to be up to date, so that the unsaved changes are now saved and ->
                                     //->the yellow background will be shown for the newly added values
                                     for (columnIndex in 0..3) {
                                         rowData[columnIndex].value.hasUnsavedChanges = false
-                                        rowData[columnIndex].value.previousText =
-                                            rowData[columnIndex].value.currentText
+                                        rowData[columnIndex].value.previousText = rowData[columnIndex].value.currentText
                                     }
                                 }
                             } else {
@@ -229,7 +226,6 @@ fun CustomTable(
                                     date = date
                                 )
                                 exercisesToAdd.add(newExercise)
-                                displayedExercises.add(newExercise)
                                 for (columnIndex in 0..3) {
                                     rowData[columnIndex].value.hasUnsavedChanges = false
                                     rowData[columnIndex].value.previousText =
