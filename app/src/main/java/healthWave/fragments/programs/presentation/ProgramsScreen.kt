@@ -27,7 +27,7 @@ import com.example.healthwave.R
 import com.ramcosta.composedestinations.annotation.Destination
 import healthWave.core.util.HelperFunctions
 import healthWave.core.util.Programs
-import healthWave.launcher.presentation.viewmodel.UserViewModel
+import healthWave.launcher.presentation.viewmodel.SharedUserViewModel
 import healthWave.ui.components.LargeDropdownSpinner
 import healthWave.ui.components.ProgramsListItemCard
 import healthWave.ui.components.ProgramsListItemHeader
@@ -39,7 +39,7 @@ import healthWave.ui.theme.transparent_color
 @Destination
 @Composable
 fun ProgramsScreen(
-    userViewModel: UserViewModel = hiltViewModel()
+    sharedUserViewModel: SharedUserViewModel = hiltViewModel()
 ) {
     var selectedIndexDays by remember { mutableStateOf(-1) }
     var numberOfDays by remember { mutableStateOf(0) }
@@ -59,10 +59,10 @@ fun ProgramsScreen(
     val backgroundColor = remember { mutableStateOf(Color.Unspecified) }
     val itemsColor = remember { mutableStateOf(Color.Unspecified) }
 
-    baseColor.value = userViewModel.getHealthWaveColors().first
-    detailsColor.value = userViewModel.getHealthWaveColors().second
-    backgroundColor.value = userViewModel.getCurrentApplicationThemeColors().first
-    itemsColor.value = userViewModel.getCurrentApplicationThemeColors().second
+    baseColor.value = sharedUserViewModel.getHealthWaveColors().first
+    detailsColor.value = sharedUserViewModel.getHealthWaveColors().second
+    backgroundColor.value = sharedUserViewModel.getCurrentApplicationThemeColors().first
+    itemsColor.value = sharedUserViewModel.getCurrentApplicationThemeColors().second
 
     val spinnerColors = TextFieldDefaults.outlinedTextFieldColors(
         textColor = black_color,

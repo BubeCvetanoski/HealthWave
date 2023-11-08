@@ -16,6 +16,10 @@ import healthWave.fragments.calorieTracker.domain.model.Food
 import healthWave.fragments.calorieTracker.domain.model.FoodNutrimentsInfo
 import healthWave.fragments.calorieTracker.domain.model.MealType
 import healthWave.fragments.calorieTracker.domain.useCase.FoodUseCases
+import healthWave.fragments.calorieTracker.state.FoodNutrimentsInfoState
+import healthWave.fragments.calorieTracker.state.FoodState
+import healthWave.fragments.calorieTracker.state.OverviewState
+import healthWave.fragments.calorieTracker.state.WaterState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.launchIn

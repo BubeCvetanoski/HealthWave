@@ -25,6 +25,7 @@ fun CustomEditTextField(
     value: String,
     newValue: (value: String) -> Unit,
     label: String,
+    onlyIntegerValues: Boolean = false,
     focusRequester: FocusRequester,
     keyboardOptions: KeyboardOptions,
     colors: TextFieldColors,
@@ -37,7 +38,13 @@ fun CustomEditTextField(
             .imePadding()
             .focusRequester(focusRequester),
         value = value,
-        onValueChange = newValue,
+        onValueChange = { it ->
+            if (onlyIntegerValues) {
+                newValue(it.filter { it.isDigit() })
+            } else {
+                newValue(it)
+            }
+        },
         textStyle = TextStyle(fontSize = 14.sp),
         label = { Text(text = label, fontSize = 10.sp) },
         singleLine = true,

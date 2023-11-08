@@ -10,30 +10,33 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.healthwave.R
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import healthWave.core.util.HelperFunctions.Companion.CollectUiEvents
 import healthWave.core.util.HelperFunctions.Companion.initializeOutlinedTextFieldColors
-import healthWave.core.util.UiEvent
-import healthWave.core.util.UiText
 import healthWave.data.local.database.entity.User
-import healthWave.destinations.SignUpFirstScreenDestination
-import healthWave.destinations.SignUpSecondScreenDestination
+import healthWave.launcher.presentation.event.SharedSignUpEvent
+import healthWave.launcher.presentation.viewmodel.SharedUserViewModel
 import healthWave.ui.components.BlurredSignUpBackground
 import healthWave.ui.components.BottomTextViewsSignUpScreen
 import healthWave.ui.components.CustomEditTextField
+import healthWave.ui.components.LargeDropdownSpinner
 import healthWave.ui.theme.transparent_color
 
 
@@ -42,16 +45,30 @@ import healthWave.ui.theme.transparent_color
 @Composable
 fun SignUpFirstScreen(
     navigator: DestinationsNavigator,
-    user: User
+    user: User,
+    sharedUserViewModel: SharedUserViewModel = hiltViewModel()
 ) {
     val keyBoardController = LocalSoftwareKeyboardController.current
+    val context = LocalContext.current
+    val outlinedTextFieldColors = initializeOutlinedTextFieldColors()
 
     val firstName = remember { mutableStateOf("") }
     val lastName = remember { mutableStateOf("") }
     val firstNameFocusRequester = remember { FocusRequester() }
     val lastNameFocusRequester = remember { FocusRequester() }
 
-    val colors = initializeOutlinedTextFieldColors()
+    val genderList = listOf(
+        stringResource(id = R.string.male),
+        stringResource(id = R.string.female)
+    )
+    var selectedIndexGender by remember { mutableStateOf(-1) }
+
+    CollectUiEvents(
+        uiEvent = sharedUserViewModel.uiEvent,
+        viewModel = sharedUserViewModel,
+        context = context
+    )
+
     Surface(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -79,14 +96,16 @@ fun SignUpFirstScreen(
                         keyboardType = KeyboardType.Text,
                         imeAction = ImeAction.Next
                     ),
-                    colors = colors
+                    colors = outlinedTextFieldColors
                 ) {
-                    validateSignUpFirstScreen(
-                        firstNameFocusRequester,
-                        lastNameFocusRequester,
-                        keyBoardController,
-                        navigator,
-                        user
+                    sharedUserViewModel.onEvent(
+                        SharedSignUpEvent.ValidateSignUpFirstScreen(
+                            firstNameFocusRequester,
+                            lastNameFocusRequester,
+                            keyBoardController,
+                            navigator,
+                            user
+                        )
                     )
                 }
                 Spacer(modifier = Modifier.height(10.dp))
@@ -102,48 +121,43 @@ fun SignUpFirstScreen(
                         keyboardType = KeyboardType.Text,
                         imeAction = ImeAction.Next
                     ),
-                    colors = colors
+                    colors = outlinedTextFieldColors
                 ) {
-                    validateSignUpFirstScreen(
-                        firstNameFocusRequester,
-                        lastNameFocusRequester,
-                        keyBoardController,
-                        navigator,
-                        user
+                    sharedUserViewModel.onEvent(
+                        SharedSignUpEvent.ValidateSignUpFirstScreen(
+                            firstNameFocusRequester,
+                            lastNameFocusRequester,
+                            keyBoardController,
+                            navigator,
+                            user
+                        )
                     )
                 }
+                Spacer(modifier = Modifier.height(10.dp))
+                LargeDropdownSpinner(
+                    label = stringResource(id = R.string.gender),
+                    colors = outlinedTextFieldColors,
+                    items = genderList,
+                    selectedIndex = selectedIndexGender,
+                    expanded = sharedUserViewModel.expandedGenderSpinner,
+                    onItemSelected = { index, item ->
+                        selectedIndexGender = index
+                        user.gender = item
+                    },
+                    onValidate = {
+                        sharedUserViewModel.onEvent(
+                            SharedSignUpEvent.ValidateSignUpFirstScreen(
+                                firstNameFocusRequester,
+                                lastNameFocusRequester,
+                                keyBoardController,
+                                navigator,
+                                user
+                            )
+                        )
+                    }
+                )
                 BottomTextViewsSignUpScreen(secondText = stringResource(id = R.string.step_1))
             }
-        }
-    }
-}
-
-@OptIn(ExperimentalComposeUiApi::class)
-private fun validateSignUpFirstScreen(
-    firstNameFocusRequester: FocusRequester,
-    lastNameFocusRequester: FocusRequester,
-    softwareKeyboardController: SoftwareKeyboardController?,
-    navigator: DestinationsNavigator,
-    user: User
-) {
-    if (user.firstName == "" || user.firstName.length < 2) {
-        UiEvent.ShowToast(
-            UiText.StringResource(resId = R.string.fill_in_first_name)
-        )
-        firstNameFocusRequester.requestFocus()
-        return
-    }
-    if (user.lastName == "" || user.lastName.length < 2) {
-        UiEvent.ShowToast(
-            UiText.StringResource(resId = R.string.fill_in_last_name)
-        )
-        lastNameFocusRequester.requestFocus()
-        return
-    }
-    softwareKeyboardController?.hide()
-    navigator.navigate(SignUpSecondScreenDestination(user = user)) {
-        popUpTo(SignUpFirstScreenDestination.route) {
-            inclusive = true
         }
     }
 }

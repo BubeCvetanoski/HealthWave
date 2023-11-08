@@ -46,26 +46,27 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.healthwave.R
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import healthWave.core.util.HelperFunctions.Companion.navigateTo
 import healthWave.data.local.database.entity.User
 import healthWave.destinations.CalorieTrackerScreenDestination
 import healthWave.destinations.MyProfileScreenDestination
 import healthWave.destinations.ProgramsScreenDestination
 import healthWave.destinations.TrainingTrackerScreenDestination
-import healthWave.launcher.presentation.viewmodel.UserViewModel
-import healthWave.ui.components.UpdateNameDialog
+import healthWave.launcher.presentation.viewmodel.SharedUserViewModel
 import healthWave.ui.components.InformativeTextComposable
 import healthWave.ui.components.InformativeTextItem
+import healthWave.ui.components.UpdateNameDialog
 import healthWave.ui.theme.black_color
 
 @Destination
 @Composable
 fun MyProfileScreen(
-    userViewModel: UserViewModel = hiltViewModel(),
+    sharedUserViewModel: SharedUserViewModel = hiltViewModel(),
     navigator: DestinationsNavigator,
     id: Int
 ) {
     val context = LocalContext.current
-    val user = userViewModel.userState.collectAsState()
+    val user = sharedUserViewModel.userState.collectAsState()
     val informationItems = initializeInformativeTextItem(
         user = user.value,
         context = context
@@ -77,10 +78,10 @@ fun MyProfileScreen(
     val backgroundColor = remember { mutableStateOf(Color.Unspecified) }
     val itemsColor = remember { mutableStateOf(Color.Unspecified) }
 
-    baseColor.value = userViewModel.getHealthWaveColors().first
-    detailsColor.value = userViewModel.getHealthWaveColors().second
-    backgroundColor.value = userViewModel.getCurrentApplicationThemeColors().first
-    itemsColor.value = userViewModel.getCurrentApplicationThemeColors().second
+    baseColor.value = sharedUserViewModel.getHealthWaveColors().first
+    detailsColor.value = sharedUserViewModel.getHealthWaveColors().second
+    backgroundColor.value = sharedUserViewModel.getCurrentApplicationThemeColors().first
+    itemsColor.value = sharedUserViewModel.getCurrentApplicationThemeColors().second
 
     val myProfilePic: ImageVector = when (user.value.gender) {
         stringResource(id = R.string.male) -> Icons.Filled.Man
@@ -95,25 +96,27 @@ fun MyProfileScreen(
     val onBack = {
         when (id) {
             0 -> {
-                navigator.navigate(CalorieTrackerScreenDestination) {
-                    popUpTo(MyProfileScreenDestination.route) {
-                        inclusive = true
-                    }
-                }
+                navigateTo(
+                    screen = CalorieTrackerScreenDestination,
+                    popUpToRoute = MyProfileScreenDestination.route,
+                    navigator = navigator
+                )
             }
+
             1 -> {
-                navigator.navigate(TrainingTrackerScreenDestination) {
-                    popUpTo(MyProfileScreenDestination.route) {
-                        inclusive = true
-                    }
-                }
+                navigateTo(
+                    screen = TrainingTrackerScreenDestination,
+                    popUpToRoute = MyProfileScreenDestination.route,
+                    navigator = navigator
+                )
             }
+
             2 -> {
-                navigator.navigate(ProgramsScreenDestination) {
-                    popUpTo(MyProfileScreenDestination.route) {
-                        inclusive = true
-                    }
-                }
+                navigateTo(
+                    screen = ProgramsScreenDestination,
+                    popUpToRoute = MyProfileScreenDestination.route,
+                    navigator = navigator
+                )
             }
         }
     }
@@ -183,7 +186,7 @@ fun MyProfileScreen(
                 modifier = Modifier.clickable { onIconClicked() }
             )
             if (shouldShowCustomUpdateNameDialog.value) {
-                ShowCustomUpdateNameDialog(baseColor.value, userViewModel, user.value) {
+                ShowCustomUpdateNameDialog(baseColor.value, sharedUserViewModel, user.value) {
                     shouldShowCustomUpdateNameDialog.value = false
                 }
             }
@@ -208,10 +211,12 @@ fun MyProfileScreen(
                     contentColor = black_color
                 ),
                 onClick = { onBack() }
-            ) { Text(
-                text = stringResource(id = R.string.back),
-                fontSize = 14.sp
-            ) }
+            ) {
+                Text(
+                    text = stringResource(id = R.string.back),
+                    fontSize = 14.sp
+                )
+            }
         }
     }
 }
@@ -248,13 +253,13 @@ private fun initializeInformativeTextItem(
 @Composable
 fun ShowCustomUpdateNameDialog(
     containerColor: Color,
-    userViewModel: UserViewModel,
+    sharedUserViewModel: SharedUserViewModel,
     user: User,
     onDismiss: () -> Unit
 ) {
     UpdateNameDialog(
         containerColor = containerColor,
-        userViewModel = userViewModel,
+        sharedUserViewModel = sharedUserViewModel,
         user = user,
         onDismiss = onDismiss
     )

@@ -23,7 +23,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -38,14 +37,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.healthwave.R
+import healthWave.core.util.HelperFunctions.Companion.CollectUiEvents
 import healthWave.core.util.HelperFunctions.Companion.clearTableCellData
 import healthWave.core.util.HelperFunctions.Companion.findNextEmptyCell
-import healthWave.core.util.HelperFunctions.Companion.showToast
-import healthWave.core.util.UiEvent
 import healthWave.data.local.database.entity.Exercise
 import healthWave.fragments.trainingTracker.presentation.screen.TableCellDataItem
-import healthWave.fragments.trainingTracker.presentation.viewmodel.ExerciseState
 import healthWave.fragments.trainingTracker.presentation.viewmodel.ExerciseViewModel
+import healthWave.fragments.trainingTracker.state.ExerciseState
 import healthWave.ui.theme.black_color
 import healthWave.ui.theme.transparent_color
 import healthWave.ui.theme.white_color
@@ -66,19 +64,11 @@ fun CustomTable(
     val nameColumnWeight = .55f
     val restColumnWeight = .15f
 
-    LaunchedEffect(exerciseViewModel) {
-        exerciseViewModel.uiEvent.collect { event ->
-            when (event) {
-                is UiEvent.ShowToast -> {
-                    showToast(
-                        context = context,
-                        message = event.message.asString(context),
-                        duration = 10
-                    )
-                }
-            }
-        }
-    }
+    CollectUiEvents(
+        uiEvent = exerciseViewModel.uiEvent,
+        viewModel = exerciseViewModel,
+        context = context
+    )
 
     Box(
         modifier = Modifier

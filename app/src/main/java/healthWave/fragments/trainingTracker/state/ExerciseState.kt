@@ -1,4 +1,4 @@
-package healthWave.fragments.trainingTracker.presentation.viewmodel
+package healthWave.fragments.trainingTracker.state
 
 import healthWave.data.local.database.entity.Exercise
 

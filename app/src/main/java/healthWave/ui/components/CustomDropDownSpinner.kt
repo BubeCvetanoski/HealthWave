@@ -54,6 +54,7 @@ fun <T> LargeDropdownSpinner(
     colors: TextFieldColors,
     selectedIndex: Int = -1,
     enabled: Boolean = true,
+    expanded: Boolean = false,
     notSetLabel: String? = null,
     items: List<T>,
     onItemSelected: (index: Int, item: T) -> Unit,
@@ -66,10 +67,15 @@ fun <T> LargeDropdownSpinner(
             enabled = itemEnabled,
             onClick = onClick,
         )
-    },
+    }
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    val icon = if (expanded)
+    var _expanded by remember { mutableStateOf(false) }
+
+    if (expanded) {
+        _expanded = true
+    }
+
+    val icon = if (_expanded)
         Icons.Filled.KeyboardArrowUp
     else
         Icons.Filled.KeyboardArrowDown
@@ -93,7 +99,7 @@ fun <T> LargeDropdownSpinner(
                     contentDescription = stringResource(id = R.string.drop_down),
                     tint = gray_level_1,
                     modifier = Modifier
-                        .clickable { expanded = !expanded }
+                        .clickable { _expanded = !_expanded }
                 )
             },
             colors = colors
@@ -105,14 +111,14 @@ fun <T> LargeDropdownSpinner(
                 .fillMaxHeight()
                 .padding(top = 8.dp)
                 .clip(RoundedCornerShape(25.dp))
-                .clickable(enabled = enabled) { expanded = true },
+                .clickable(enabled = enabled) { _expanded = true },
             color = transparent_color,
         ) {}
     }
 
-    if (expanded) {
+    if (_expanded) {
         Dialog(
-            onDismissRequest = { expanded = false },
+            onDismissRequest = { _expanded = false },
         ) {
             Surface(
                 shape = RoundedCornerShape(12.dp),
@@ -149,7 +155,7 @@ fun <T> LargeDropdownSpinner(
                         ) {
                             onItemSelected(index, item)
                             onValidate()
-                            expanded = false
+                            _expanded = false
                         }
 
                         if (index < items.lastIndex) {

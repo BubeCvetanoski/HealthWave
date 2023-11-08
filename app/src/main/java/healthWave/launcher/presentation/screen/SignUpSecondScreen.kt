@@ -1,6 +1,5 @@
 package healthWave.launcher.presentation.screen
 
-import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -9,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,50 +17,65 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.healthwave.R
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import healthWave.core.util.HelperFunctions.Companion.createListForSpinner
+import healthWave.core.util.HelperFunctions.Companion.CollectUiEvents
 import healthWave.core.util.HelperFunctions.Companion.initializeOutlinedTextFieldColors
-import healthWave.core.util.HelperFunctions.Companion.showToast
+import healthWave.core.util.HelperFunctions.Companion.navigateTo
 import healthWave.data.local.database.entity.User
 import healthWave.destinations.SignUpFirstScreenDestination
 import healthWave.destinations.SignUpSecondScreenDestination
-import healthWave.destinations.SignUpThirdScreenDestination
+import healthWave.launcher.presentation.event.SharedSignUpEvent
+import healthWave.launcher.presentation.viewmodel.SharedUserViewModel
 import healthWave.ui.components.BlurredSignUpBackground
 import healthWave.ui.components.BottomTextViewsSignUpScreen
+import healthWave.ui.components.CustomEditTextField
 import healthWave.ui.components.LargeDropdownSpinner
 import healthWave.ui.theme.transparent_color
+
 
 @Destination
 @Composable
 fun SignUpSecondScreen(
     navigator: DestinationsNavigator,
-    user: User
+    user: User,
+    sharedUserViewModel: SharedUserViewModel = hiltViewModel()
 ) {
     Surface(
         modifier = Modifier.fillMaxSize()
     ) {
         val context = LocalContext.current
-        val spinnerColors = initializeOutlinedTextFieldColors()
-        var selectedIndexGender by remember { mutableStateOf(-1) }
-        var selectedIndexAge by remember { mutableStateOf(-1) }
-        var selectedIndexWeight by remember { mutableStateOf(-1) }
-        var selectedIndexHeight by remember { mutableStateOf(-1) }
-        var selectedIndexActivity by remember { mutableStateOf(-1) }
 
-        val ageList = createListForSpinner(10..69) { number ->
-            if (number == 1) {
-                "$number year old"
-            } else {
-                "$number years old"
-            }
-        }
-        val heightList = createListForSpinner(100..250, "cm")
-        val weightList = createListForSpinner(30..150, "kg")
+        val age = remember { mutableStateOf("") }
+        val height = remember { mutableStateOf("") }
+        val weight = remember { mutableStateOf("") }
+        val ageFocusRequester = remember { FocusRequester() }
+        val heightFocusRequester = remember { FocusRequester() }
+        val weightFocusRequester = remember { FocusRequester() }
+
+        val activityList = listOf(
+            stringResource(id = R.string.inactive),
+            stringResource(id = R.string.light_active),
+            stringResource(id = R.string.moderate_active),
+            stringResource(id = R.string.very_active),
+            stringResource(id = R.string.extra_active)
+        )
+        var selectedIndexActivity by remember { mutableStateOf(-1) }
+        val outlinedTextFieldColors = initializeOutlinedTextFieldColors()
+
+        CollectUiEvents(
+            uiEvent = sharedUserViewModel.uiEvent,
+            viewModel = sharedUserViewModel,
+            context = context
+        )
 
         if (user.id != null) {
             BackHandler {}
@@ -68,11 +83,12 @@ fun SignUpSecondScreen(
             BackHandler {
                 user.firstName = ""
                 user.lastName = ""
-                navigator.navigate(SignUpFirstScreenDestination(user = user)) {
-                    popUpTo(SignUpSecondScreenDestination.route) {
-                        inclusive = true
-                    }
-                }
+                user.gender = ""
+                navigateTo(
+                    screen = SignUpFirstScreenDestination(user = user),
+                    popUpToRoute = SignUpSecondScreenDestination.route,
+                    navigator = navigator
+                )
             }
         }
         BlurredSignUpBackground()
@@ -87,124 +103,107 @@ fun SignUpSecondScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                LargeDropdownSpinner(
-                    label = stringResource(id = R.string.gender),
-                    colors = spinnerColors,
-                    items = listOf(
-                        stringResource(id = R.string.male),
-                        stringResource(id = R.string.female)
-                    ),
-                    selectedIndex = selectedIndexGender,
-                    onItemSelected = { index, item ->
-                        selectedIndexGender = index
-                        user.gender = item
+                CustomEditTextField(
+                    value = age.value,
+                    newValue = {
+                        age.value = it
+                        user.age = it
                     },
-                    onValidate = {
-                        validateSignUpSecondScreen(context, navigator, user)
-                    }
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                LargeDropdownSpinner(
                     label = stringResource(id = R.string.age),
-                    colors = spinnerColors,
-                    items = ageList,
-                    selectedIndex = selectedIndexAge,
-                    onItemSelected = { index, item ->
-                        selectedIndexAge = index
-                        user.age = item
-                    },
-                    onValidate = {
-                        validateSignUpSecondScreen(context, navigator, user)
-                    }
-                )
+                    onlyIntegerValues = true,
+                    focusRequester = ageFocusRequester,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Next
+                    ),
+                    colors = outlinedTextFieldColors
+                ) {
+                    sharedUserViewModel.onEvent(
+                        SharedSignUpEvent.ValidateSignUpSecondScreen(
+                            ageFocusRequester,
+                            heightFocusRequester,
+                            weightFocusRequester,
+                            navigator,
+                            user
+                        )
+                    )
+                }
                 Spacer(modifier = Modifier.height(10.dp))
-                LargeDropdownSpinner(
+                CustomEditTextField(
+                    value = height.value,
+                    newValue = {
+                        height.value = it
+                        user.height = it
+                    },
                     label = stringResource(id = R.string.height),
-                    colors = spinnerColors,
-                    items = heightList,
-                    selectedIndex = selectedIndexHeight,
-                    onItemSelected = { index, item ->
-                        selectedIndexHeight = index
-                        user.height = item
-                    },
-                    onValidate = {
-                        validateSignUpSecondScreen(context, navigator, user)
-                    }
-                )
+                    onlyIntegerValues = true,
+                    focusRequester = heightFocusRequester,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Next
+                    ),
+                    colors = outlinedTextFieldColors
+                ) {
+                    sharedUserViewModel.onEvent(
+                        SharedSignUpEvent.ValidateSignUpSecondScreen(
+                            ageFocusRequester,
+                            heightFocusRequester,
+                            weightFocusRequester,
+                            navigator,
+                            user
+                        )
+                    )
+                }
                 Spacer(modifier = Modifier.height(10.dp))
-                LargeDropdownSpinner(
-                    label = stringResource(id = R.string.weight),
-                    colors = spinnerColors,
-                    items = weightList,
-                    selectedIndex = selectedIndexWeight,
-                    onItemSelected = { index, item ->
-                        selectedIndexWeight = index
-                        user.weight = item
+                CustomEditTextField(
+                    value = weight.value,
+                    newValue = {
+                        weight.value = it
+                        user.weight = it
                     },
-                    onValidate = {
-                        validateSignUpSecondScreen(context, navigator, user)
-                    }
-                )
+                    label = stringResource(id = R.string.weight),
+                    onlyIntegerValues = true,
+                    focusRequester = weightFocusRequester,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Next
+                    ),
+                    colors = outlinedTextFieldColors
+                ) {
+                    sharedUserViewModel.onEvent(
+                        SharedSignUpEvent.ValidateSignUpSecondScreen(
+                            ageFocusRequester,
+                            heightFocusRequester,
+                            weightFocusRequester,
+                            navigator,
+                            user
+                        )
+                    )
+                }
                 Spacer(modifier = Modifier.height(10.dp))
                 LargeDropdownSpinner(
                     label = stringResource(id = R.string.weekly_activity),
-                    colors = spinnerColors,
-                    items = listOf(
-                        stringResource(id = R.string.inactive),
-                        stringResource(id = R.string.light_active),
-                        stringResource(id = R.string.moderate_active),
-                        stringResource(id = R.string.very_active),
-                        stringResource(id = R.string.extra_active)
-                    ),
+                    colors = outlinedTextFieldColors,
+                    items = activityList,
                     selectedIndex = selectedIndexActivity,
+                    expanded = sharedUserViewModel.expandedActivitySpinner,
                     onItemSelected = { index, item ->
                         selectedIndexActivity = index
                         user.activity = item
                     },
                     onValidate = {
-                        validateSignUpSecondScreen(context, navigator, user)
+                        sharedUserViewModel.onEvent(
+                            SharedSignUpEvent.ValidateSignUpSecondScreen(
+                                ageFocusRequester,
+                                heightFocusRequester,
+                                weightFocusRequester,
+                                navigator,
+                                user
+                            )
+                        )
                     }
                 )
                 BottomTextViewsSignUpScreen(secondText = stringResource(id = R.string.step_2))
-            }
-        }
-    }
-}
-
-private fun validateSignUpSecondScreen(
-    context: Context,
-    navigation: DestinationsNavigator,
-    user: User
-) {
-    return when {
-        user.gender.isEmpty() -> showToast(
-            context = context,
-            context.getString(R.string.fill_in_gender)
-        )
-
-        user.age.isEmpty() -> showToast(
-            context = context,
-            context.getString(R.string.fill_in_age)
-        )
-
-        user.height.isEmpty() -> showToast(
-            context = context,
-            context.getString(R.string.fill_in_height)
-        )
-
-        user.weight.isEmpty() -> showToast(
-            context = context,
-            context.getString(R.string.fill_in_weight)
-        )
-
-        user.activity.isEmpty() -> showToast(
-            context = context,
-            context.getString(R.string.fill_in_activity)
-        )
-
-        else -> navigation.navigate(SignUpThirdScreenDestination(user = user)){
-            popUpTo(SignUpSecondScreenDestination.route) {
-                inclusive = true
             }
         }
     }

@@ -36,7 +36,7 @@ import com.example.healthwave.R
 import healthWave.core.util.UiEvent
 import healthWave.core.util.UiText
 import healthWave.data.local.database.entity.User
-import healthWave.launcher.presentation.viewmodel.UserViewModel
+import healthWave.launcher.presentation.viewmodel.SharedUserViewModel
 import healthWave.ui.theme.black_color
 import healthWave.ui.theme.blue_color_level_6
 import healthWave.ui.theme.gray_level_1
@@ -50,7 +50,7 @@ import kotlinx.coroutines.launch
 fun UpdateNameDialog(
     containerColor: Color,
     user: User,
-    userViewModel: UserViewModel,
+    sharedUserViewModel: SharedUserViewModel,
     onDismiss: () -> Unit
 ) {
     val keyBoardController = LocalSoftwareKeyboardController.current
@@ -68,7 +68,7 @@ fun UpdateNameDialog(
             )
         ) {
             scope.launch {
-                userViewModel.updateUserFirstAndLastName(
+                sharedUserViewModel.updateUserFirstAndLastName(
                     user.firstName,
                     user.lastName
                 )

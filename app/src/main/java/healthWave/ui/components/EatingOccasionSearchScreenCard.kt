@@ -38,11 +38,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.annotation.ExperimentalCoilApi
 import com.example.healthwave.R
-import healthWave.core.util.HelperFunctions.Companion.showToast
-import healthWave.core.util.UiEvent
+import healthWave.core.util.HelperFunctions.Companion.CollectUiEvents
 import healthWave.fragments.calorieTracker.domain.model.MealType
-import healthWave.fragments.calorieTracker.presentation.viewmodel.FoodState
 import healthWave.fragments.calorieTracker.presentation.viewmodel.FoodViewModel
+import healthWave.fragments.calorieTracker.state.FoodState
 import healthWave.ui.theme.transparent_color
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalCoilApi::class)
@@ -70,20 +69,11 @@ fun EatingOccasionSearchScreenCard(
         backgroundColor = transparent_color
     }
 
-    LaunchedEffect(key1 = foodViewModel) {
-        foodViewModel.uiEvent.collect { event ->
-            when (event) {
-                is UiEvent.ShowToast -> {
-                    showToast(
-                        context = context,
-                        message = event.message.asString(context),
-                        duration = 10
-                    )
-                    keyboardController?.hide()
-                }
-            }
-        }
-    }
+    CollectUiEvents(
+        uiEvent = foodViewModel.uiEvent,
+        viewModel = foodViewModel,
+        context = context
+    )
 
     if (!isWaterState) {
         LaunchedEffect(Unit) {

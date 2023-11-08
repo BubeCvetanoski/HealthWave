@@ -46,7 +46,7 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import healthWave.core.util.HelperFunctions
 import healthWave.data.local.database.entity.Exercise
 import healthWave.fragments.trainingTracker.presentation.viewmodel.ExerciseViewModel
-import healthWave.launcher.presentation.viewmodel.UserViewModel
+import healthWave.launcher.presentation.viewmodel.SharedUserViewModel
 import healthWave.ui.components.CustomTable
 import healthWave.ui.components.LargeDropdownSpinner
 import healthWave.ui.theme.black_color
@@ -59,7 +59,7 @@ import java.time.format.DateTimeFormatter
 @Destination
 @Composable
 fun TrainingTrackerScreen(
-    userViewModel: UserViewModel = hiltViewModel(),
+    sharedUserViewModel: SharedUserViewModel = hiltViewModel(),
     exerciseViewModel: ExerciseViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -93,11 +93,11 @@ fun TrainingTrackerScreen(
     val backgroundColor = remember { mutableStateOf(Color.Unspecified) }
     val itemsColor = remember { mutableStateOf(Color.Unspecified) }
 
-    firstLevelColor.value = userViewModel.getHealthWaveFirstLevelColor()
-    baseColor.value = userViewModel.getHealthWaveColors().first
-    detailsColor.value = userViewModel.getHealthWaveColors().second
-    backgroundColor.value = userViewModel.getCurrentApplicationThemeColors().first
-    itemsColor.value = userViewModel.getCurrentApplicationThemeColors().second
+    firstLevelColor.value = sharedUserViewModel.getHealthWaveFirstLevelColor()
+    baseColor.value = sharedUserViewModel.getHealthWaveColors().first
+    detailsColor.value = sharedUserViewModel.getHealthWaveColors().second
+    backgroundColor.value = sharedUserViewModel.getCurrentApplicationThemeColors().first
+    itemsColor.value = sharedUserViewModel.getCurrentApplicationThemeColors().second
 
     val spinnerColors = TextFieldDefaults.outlinedTextFieldColors(
         textColor = black_color,

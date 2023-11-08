@@ -1,4 +1,4 @@
-package healthWave.fragments.calorieTracker.presentation.viewmodel
+package healthWave.fragments.calorieTracker.state
 
 import healthWave.fragments.calorieTracker.domain.model.FoodNutrimentsInfo
 

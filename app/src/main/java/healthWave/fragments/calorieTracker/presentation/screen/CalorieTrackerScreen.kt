@@ -56,8 +56,8 @@ import com.vanpra.composematerialdialogs.datetime.date.DatePickerDefaults
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import healthWave.fragments.calorieTracker.presentation.viewmodel.FoodViewModel
-import healthWave.fragments.calorieTracker.presentation.viewmodel.OverviewState
-import healthWave.launcher.presentation.viewmodel.UserViewModel
+import healthWave.fragments.calorieTracker.state.OverviewState
+import healthWave.launcher.presentation.viewmodel.SharedUserViewModel
 import healthWave.ui.components.DailyCalorieCountCard
 import healthWave.ui.components.EatingOccasionItemCard
 import healthWave.ui.components.EatingOccasionSearchScreenCard
@@ -72,7 +72,7 @@ import java.time.format.DateTimeFormatter
 @Destination
 @Composable
 fun CalorieTrackerScreen(
-    userViewModel: UserViewModel = hiltViewModel(),
+    sharedUserViewModel: SharedUserViewModel = hiltViewModel(),
     foodViewModel: FoodViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -98,12 +98,12 @@ fun CalorieTrackerScreen(
     val backgroundColor = remember { mutableStateOf(Color.Unspecified) }
     val itemsColor = remember { mutableStateOf(Color.Unspecified) }
 
-    userGoalCalories.value = userViewModel.getGoalCalories()
-    firstLevelColor.value = userViewModel.getHealthWaveFirstLevelColor()
-    baseColor.value = userViewModel.getHealthWaveColors().first
-    detailsColor.value = userViewModel.getHealthWaveColors().second
-    backgroundColor.value = userViewModel.getCurrentApplicationThemeColors().first
-    itemsColor.value = userViewModel.getCurrentApplicationThemeColors().second
+    userGoalCalories.value = sharedUserViewModel.getGoalCalories()
+    firstLevelColor.value = sharedUserViewModel.getHealthWaveFirstLevelColor()
+    baseColor.value = sharedUserViewModel.getHealthWaveColors().first
+    detailsColor.value = sharedUserViewModel.getHealthWaveColors().second
+    backgroundColor.value = sharedUserViewModel.getCurrentApplicationThemeColors().first
+    itemsColor.value = sharedUserViewModel.getCurrentApplicationThemeColors().second
 
     val outlinedTextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
         textColor = black_color,

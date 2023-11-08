@@ -124,7 +124,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFoodUseCases(repository: FoodRepository, dataStoreRepository: DataStoreRepository): FoodUseCases {
+    fun provideFoodUseCases(repository: FoodRepository): FoodUseCases {
         return FoodUseCases(
             searchFood = SearchFood(repository),
             insertFood = InsertFood(repository),

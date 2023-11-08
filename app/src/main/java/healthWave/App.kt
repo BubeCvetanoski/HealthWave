@@ -25,7 +25,7 @@ import healthWave.destinations.MyProfileScreenDestination
 import healthWave.destinations.ProgramsScreenDestination
 import healthWave.destinations.SignUpSecondScreenDestination
 import healthWave.destinations.TrainingTrackerScreenDestination
-import healthWave.launcher.presentation.viewmodel.UserViewModel
+import healthWave.launcher.presentation.viewmodel.SharedUserViewModel
 import healthWave.ui.components.AnimatedBottomNavigationBar
 import healthWave.ui.components.CustomNavigationDrawer
 import healthWave.ui.components.CustomTopAppBar
@@ -41,8 +41,8 @@ fun App(notificationService: MotivationalNotificationsService) {
     val navController = engine.rememberNavController()
     val currentDestination = navController.appCurrentDestinationAsState().value
 
-    val userViewModel: UserViewModel = hiltViewModel()
-    val user = userViewModel.userState.collectAsState()
+    val sharedUserViewModel: SharedUserViewModel = hiltViewModel()
+    val user = sharedUserViewModel.userState.collectAsState()
     val scope = rememberCoroutineScope()
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -59,13 +59,13 @@ fun App(notificationService: MotivationalNotificationsService) {
     val newTheme = remember { mutableStateOf("") }
     val newNotificationsChoice = remember { mutableStateOf("") }
 
-    newTheme.value = userViewModel.getNewApplicationTheme()
-    newNotificationsChoice.value = userViewModel.getNewNotificationsChoice()
+    newTheme.value = sharedUserViewModel.getNewApplicationTheme()
+    newNotificationsChoice.value = sharedUserViewModel.getNewNotificationsChoice()
 
-    baseColor.value = userViewModel.getHealthWaveColors().first
-    detailsColor.value = userViewModel.getHealthWaveColors().second
-    backgroundColor.value = userViewModel.getCurrentApplicationThemeColors().first
-    itemsColor.value = userViewModel.getCurrentApplicationThemeColors().second
+    baseColor.value = sharedUserViewModel.getHealthWaveColors().first
+    detailsColor.value = sharedUserViewModel.getHealthWaveColors().second
+    backgroundColor.value = sharedUserViewModel.getCurrentApplicationThemeColors().first
+    itemsColor.value = sharedUserViewModel.getCurrentApplicationThemeColors().second
 
     val fragmentDestinationIdentifier: FragmentsDestinationIdentifier =
         when (currentDestination) {
@@ -127,13 +127,13 @@ fun App(notificationService: MotivationalNotificationsService) {
 
     val onAppearanceDialogConfirm = {
         scope.launch {
-            userViewModel.saveTheme(themeValue = newTheme.value)
+            sharedUserViewModel.saveTheme(themeValue = newTheme.value)
         }
     }
 
     val onNotificationDialogConfirm = {
         scope.launch {
-            userViewModel.saveNotificationsChoice(notificationsChoice = newNotificationsChoice.value)
+            sharedUserViewModel.saveNotificationsChoice(notificationsChoice = newNotificationsChoice.value)
 
             if (newNotificationsChoice.value == "ON") {
                 notificationService.scheduleMotivationalNotifications()

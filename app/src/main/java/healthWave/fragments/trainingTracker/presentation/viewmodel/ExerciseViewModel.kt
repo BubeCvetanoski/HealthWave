@@ -13,6 +13,7 @@ import healthWave.core.util.UiText
 import healthWave.data.local.database.entity.Exercise
 import healthWave.fragments.trainingTracker.domain.useCase.ExerciseUseCases
 import healthWave.fragments.trainingTracker.presentation.screen.TableCellDataItem
+import healthWave.fragments.trainingTracker.state.ExerciseState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.launchIn

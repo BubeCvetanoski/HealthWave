@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.sp
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.healthwave.R
-import healthWave.fragments.calorieTracker.presentation.viewmodel.FoodNutrimentsInfoState
+import healthWave.fragments.calorieTracker.state.FoodNutrimentsInfoState
 import healthWave.ui.theme.transparent_color
 
 @OptIn(ExperimentalCoilApi::class, ExperimentalMaterial3Api::class)

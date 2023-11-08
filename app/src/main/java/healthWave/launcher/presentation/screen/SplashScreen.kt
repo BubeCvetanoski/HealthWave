@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,11 +20,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import healthWave.data.local.database.entity.User
-import healthWave.destinations.CalorieTrackerScreenDestination
-import healthWave.destinations.SignUpFirstScreenDestination
-import healthWave.destinations.SplashScreenDestination
-import healthWave.launcher.presentation.viewmodel.UserViewModel
+import healthWave.launcher.presentation.event.SharedSignUpEvent
+import healthWave.launcher.presentation.viewmodel.SharedUserViewModel
 import healthWave.ui.components.AnimatedLogo
 import healthWave.ui.theme.black_color
 import healthWave.ui.theme.blue_color_level_9
@@ -36,10 +32,9 @@ import kotlinx.coroutines.delay
 @Destination
 @Composable
 fun SplashScreen(
-    userViewModel: UserViewModel = hiltViewModel(),
+    sharedUserViewModel: SharedUserViewModel = hiltViewModel(),
     navigator: DestinationsNavigator
 ) {
-    val user = userViewModel.userState.collectAsState()
     val scale = remember {
         Animatable(0f)
     }
@@ -55,7 +50,7 @@ fun SplashScreen(
         )
         delay(2000L)
 
-        chooseWhichScreenToNavigateTo(navigator, user.value)
+        sharedUserViewModel.onEvent(SharedSignUpEvent.ValidateSignUpSplashScreen(navigator))
     }
     Surface(color = blue_color_level_9, modifier = Modifier.fillMaxSize()) {
         Box(
@@ -72,22 +67,6 @@ fun SplashScreen(
                 initialSloganColor = white_color,
                 finalSloganColor = black_color
             )
-        }
-    }
-}
-
-private fun chooseWhichScreenToNavigateTo(navigator: DestinationsNavigator, user: User) {
-    if (user.id != null) {
-        navigator.navigate(CalorieTrackerScreenDestination) {
-            popUpTo(SplashScreenDestination.route) {
-                inclusive = true
-            }
-        }
-    } else {
-        navigator.navigate(SignUpFirstScreenDestination(user = user)) {
-            popUpTo(SplashScreenDestination.route) {
-                inclusive = true
-            }
         }
     }
 }
