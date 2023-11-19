@@ -55,6 +55,7 @@ import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.DatePickerDefaults
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
+import healthWave.fragments.calorieTracker.presentation.event.CalorieTrackerEvent
 import healthWave.fragments.calorieTracker.presentation.viewmodel.FoodViewModel
 import healthWave.fragments.calorieTracker.state.OverviewState
 import healthWave.launcher.presentation.viewmodel.SharedUserViewModel
@@ -119,7 +120,9 @@ fun CalorieTrackerScreen(
         pickedDate = newDate
         pickADateText = formattedDate
 
-        foodViewModel.getFoodOverviewByDate(formattedDate)
+        foodViewModel.onEvent(
+            CalorieTrackerEvent.GetFoodOverviewByDate(formattedDate)
+        )
     }
     val foodState = foodViewModel.foodState
     val overviewState = foodViewModel.overviewState
@@ -130,8 +133,12 @@ fun CalorieTrackerScreen(
     )
 
     LaunchedEffect(Unit) {
-        foodViewModel.setEatingOccasionItemCardExpanded(false)
-        foodViewModel.resetRememberedState(true)
+        foodViewModel.onEvent(
+            CalorieTrackerEvent.SetEatingOccasionItemCardExpanded(false)
+        )
+        foodViewModel.onEvent(
+            CalorieTrackerEvent.ResetRememberedState(true)
+        )
     }
 
     BackHandler {}
@@ -256,7 +263,7 @@ fun CalorieTrackerScreen(
                         modifier = Modifier.clickable(
                             onClick = {
                                 title = context.getString(R.string.all_meals)
-                                foodViewModel.onEatingOccasionItemExpanded()
+                                foodViewModel.onEvent(CalorieTrackerEvent.EatingOccasionItemExpanded)
                             }
                         )
                     )
@@ -276,7 +283,7 @@ fun CalorieTrackerScreen(
                             totalCalories = item.calories.toString(),
                             onClick = {
                                 title = item.title
-                                foodViewModel.onEatingOccasionItemExpanded()
+                                foodViewModel.onEvent(CalorieTrackerEvent.EatingOccasionItemExpanded)
                             }
                         )
                         Spacer(modifier = Modifier.height(5.dp))
@@ -295,8 +302,8 @@ fun CalorieTrackerScreen(
                     foodViewModel = foodViewModel,
                     foodState = foodState,
                     onBackHandlerClick = {
-                        foodViewModel.onEatingOccasionItemExpanded()
-                        foodViewModel.resetRememberedState(true)
+                        foodViewModel.onEvent(CalorieTrackerEvent.EatingOccasionItemExpanded)
+                        foodViewModel.onEvent(CalorieTrackerEvent.ResetRememberedState(true))
                     }
                 )
             }

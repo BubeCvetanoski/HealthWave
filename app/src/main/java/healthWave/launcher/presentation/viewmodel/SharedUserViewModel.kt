@@ -77,10 +77,12 @@ class SharedUserViewModel @Inject constructor(
     }
 
     @OptIn(ExperimentalComposeUiApi::class)
-    fun onEvent(event: SharedSignUpEvent) {
-        when (event) {
+    fun onEvent(event: SharedSignUpEvent): Any {
+        return when (event) {
             is SharedSignUpEvent.ValidateSignUpSplashScreen -> {
-                validateSplashScreen(navigator = event.navigator)
+                validateSplashScreen(
+                    navigator = event.navigator
+                )
             }
 
             is SharedSignUpEvent.ValidateSignUpFirstScreen -> {
@@ -108,6 +110,12 @@ class SharedUserViewModel @Inject constructor(
                     selectedIndexResults = event.selectedIndexResults,
                     resultsList = event.resultsList,
                     navigator = event.navigator,
+                    user = event.user
+                )
+            }
+
+            is SharedSignUpEvent.CalculateTheTDEE -> {
+                calculateTheTDEE(
                     user = event.user
                 )
             }
@@ -273,7 +281,7 @@ class SharedUserViewModel @Inject constructor(
     }
 
     @OptIn(ExperimentalComposeUiApi::class)
-    fun validateSignUpFirstScreen(
+    private fun validateSignUpFirstScreen(
         firstNameFocusRequester: FocusRequester,
         lastNameFocusRequester: FocusRequester,
         softwareKeyboardController: SoftwareKeyboardController?,
@@ -342,7 +350,7 @@ class SharedUserViewModel @Inject constructor(
         }
     }
 
-    fun calculateTheTDEE(user: User): Int {
+    private fun calculateTheTDEE(user: User): Int {
         //BMR for Male = 5 + (10 x weight in kg) + (6.25 x height in cm) - (5 x age in years)
         //BMR for Female (10 x weight in kg) + (6.25 x height in cm) - (5 x age in years)
         //TDEE for level 1 = BMR * 1.2, level 2 = BMR * 1.375, level 3 = BMR * 1.55, level 4 = BMR * 1725, level 5 = BMR 1.9

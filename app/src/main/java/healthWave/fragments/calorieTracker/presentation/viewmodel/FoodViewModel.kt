@@ -16,6 +16,7 @@ import healthWave.fragments.calorieTracker.domain.model.Food
 import healthWave.fragments.calorieTracker.domain.model.FoodNutrimentsInfo
 import healthWave.fragments.calorieTracker.domain.model.MealType
 import healthWave.fragments.calorieTracker.domain.useCase.FoodUseCases
+import healthWave.fragments.calorieTracker.presentation.event.CalorieTrackerEvent
 import healthWave.fragments.calorieTracker.state.FoodNutrimentsInfoState
 import healthWave.fragments.calorieTracker.state.FoodState
 import healthWave.fragments.calorieTracker.state.OverviewState
@@ -53,7 +54,82 @@ class FoodViewModel @Inject constructor(
         getFoodOverviewByDate(date = getCurrentDateAsString())
     }
 
-    fun getFoodOverviewByDate(
+    fun onEvent(event: CalorieTrackerEvent) {
+        when (event) {
+            is CalorieTrackerEvent.CalculateCaloriesAndNutrients -> calculateCaloriesAndNutrients(
+                foods = event.foods
+            )
+
+            is CalorieTrackerEvent.ChangeFoodAmount -> changeFoodAmount(
+                food = event.food,
+                amount = event.amount
+            )
+
+            is CalorieTrackerEvent.ChangeWaterMilliliters -> changeWaterMilliliters(
+                newMilliliters = event.newMilliliters
+            )
+
+            is CalorieTrackerEvent.DeleteFood -> deleteFood(
+                date = event.date,
+                food = event.food
+            )
+
+            is CalorieTrackerEvent.DeleteWater -> deleteWater(
+                date = event.date,
+                water = event.water
+            )
+
+            is CalorieTrackerEvent.FoodItemHeaderExpanded -> foodItemHeaderExpanded(
+                food = event.food
+            )
+
+            is CalorieTrackerEvent.GetFoodByDate -> getFoodByDate(
+                date = event.date,
+                mealType = event.mealType
+            )
+
+            is CalorieTrackerEvent.GetFoodOverviewByDate -> getFoodOverviewByDate(
+                date = event.date
+            )
+
+            is CalorieTrackerEvent.GetWaterByDate -> getWaterByDate(
+                date = event.date
+            )
+
+            is CalorieTrackerEvent.InsertFood -> insertFood(
+                date = event.date,
+                food = event.food,
+                mealType = event.mealType
+            )
+
+            is CalorieTrackerEvent.InsertWater -> insertWater(
+                date = event.date,
+                water = event.water
+            )
+
+            is CalorieTrackerEvent.OnQueryChange -> onQueryChange(
+                query = event.query
+            )
+
+            is CalorieTrackerEvent.ResetRememberedState -> resetRememberedState(
+                flag = event.flag
+            )
+
+            is CalorieTrackerEvent.SetEatingOccasionItemCardExpanded -> setEatingOccasionItemCardExpanded(
+                flag = event.flag
+            )
+
+            is CalorieTrackerEvent.ViewMyMeals -> viewMyMeals(
+                date = event.date,
+                mealType = event.mealType
+            )
+
+            CalorieTrackerEvent.OnSearch -> onSearch()
+            CalorieTrackerEvent.EatingOccasionItemExpanded -> eatingOccasionItemExpanded()
+        }
+    }
+
+    private fun getFoodOverviewByDate(
         date: String
     ) {
         overviewState = overviewState.copy(
@@ -146,7 +222,7 @@ class FoodViewModel @Inject constructor(
         return CalorieAndNutrientSummary(calorieMap, nutrientMap)
     }
 
-    fun getWaterByDate(
+    private fun getWaterByDate(
         date: String
     ) {
         foodState = foodState.copy(
@@ -169,9 +245,9 @@ class FoodViewModel @Inject constructor(
             }.launchIn(viewModelScope)
     }
 
-    fun onDeleteWater(
-        water: WaterState,
-        date: String
+    private fun deleteWater(
+        date: String,
+        water: WaterState
     ) {
         viewModelScope.launch {
             water.id?.let { foodUseCases.deleteWaterById(it) }
@@ -189,9 +265,9 @@ class FoodViewModel @Inject constructor(
         }
     }
 
-    fun insertWater(
-        water: WaterState,
-        date: String
+    private fun insertWater(
+        date: String,
+        water: WaterState
     ) {
         viewModelScope.launch {
 
@@ -251,17 +327,17 @@ class FoodViewModel @Inject constructor(
             }.launchIn(viewModelScope)
     }
 
-    fun onQueryChange(query: String) {
+    private fun onQueryChange(query: String) {
         foodState = foodState.copy(query = query)
     }
 
-    fun onEatingOccasionItemExpanded() {
+    private fun eatingOccasionItemExpanded() {
         foodState = foodState.copy(
             isEatingOccasionItemCardExpanded = !foodState.isEatingOccasionItemCardExpanded
         )
     }
 
-    fun resetRememberedState(flag: Boolean) {
+    private fun resetRememberedState(flag: Boolean) {
         if (flag) {
             foodState = foodState.copy(
                 foodNutrimentsInfo = emptyList(),
@@ -270,13 +346,15 @@ class FoodViewModel @Inject constructor(
         }
     }
 
-    fun setEatingOccasionItemCardExpanded(flag: Boolean) {
+    private fun setEatingOccasionItemCardExpanded(flag: Boolean) {
         foodState = foodState.copy(
             isEatingOccasionItemCardExpanded = flag
         )
     }
 
-    fun onFoodItemHeaderExpanded(food: FoodNutrimentsInfo) {
+    private fun foodItemHeaderExpanded(
+        food: FoodNutrimentsInfo
+    ) {
         foodState = foodState.copy(
             foodNutrimentsInfo = foodState.foodNutrimentsInfo.map {
                 if (it.food == food) {
@@ -288,7 +366,7 @@ class FoodViewModel @Inject constructor(
         )
     }
 
-    fun onChangeFoodAmount(
+    private fun changeFoodAmount(
         food: FoodNutrimentsInfo,
         amount: String
     ) {
@@ -301,7 +379,7 @@ class FoodViewModel @Inject constructor(
         )
     }
 
-    fun onChangeWaterMilliliters(
+    private fun changeWaterMilliliters(
         newMilliliters: String
     ) {
         foodState = foodState.copy(
@@ -311,7 +389,7 @@ class FoodViewModel @Inject constructor(
         )
     }
 
-    fun onViewMyMeals(
+    private fun viewMyMeals(
         date: String,
         mealType: MealType
     ) {
@@ -325,9 +403,10 @@ class FoodViewModel @Inject constructor(
         )
     }
 
-    fun onDeleteFood(
-        food: FoodNutrimentsInfo,
-        date: String
+    private fun deleteFood(
+        date: String,
+        food: FoodNutrimentsInfo
+
     ) {
         viewModelScope.launch {
             food.id?.let { foodUseCases.deleteFoodById(it) }
@@ -346,10 +425,10 @@ class FoodViewModel @Inject constructor(
         }
     }
 
-    fun insertFood(
+    private fun insertFood(
+        date: String,
         food: FoodNutrimentsInfo,
-        mealType: MealType,
-        date: String
+        mealType: MealType
     ) {
         viewModelScope.launch {
             val uiState = foodState.foodNutrimentsInfo.find { it.food == food }
@@ -370,7 +449,7 @@ class FoodViewModel @Inject constructor(
         shouldEmitValue = false
     }
 
-    fun onSearch() {
+    private fun onSearch() {
         viewModelScope.launch {
             foodState = foodState.copy(
                 isLoading = true,

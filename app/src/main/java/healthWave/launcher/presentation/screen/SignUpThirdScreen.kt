@@ -45,8 +45,9 @@ fun SignUpThirdScreen(
     var selectedIndexResults by remember { mutableStateOf(-1) }
     val spinnerColors = HelperFunctions.initializeOutlinedTextFieldColors()
 
-    val totalDailyEnergyExpenditure =
-        sharedUserViewModel.calculateTheTDEE(user = user) //calories for Maintaining weight
+    val totalDailyEnergyExpenditure = sharedUserViewModel.onEvent(
+            SharedSignUpEvent.CalculateTheTDEE(user)
+        ) as Int //calories for Maintaining weight
     val losingWeightCalories = totalDailyEnergyExpenditure - 600
     val gainingWeightCalories = totalDailyEnergyExpenditure + 600
 

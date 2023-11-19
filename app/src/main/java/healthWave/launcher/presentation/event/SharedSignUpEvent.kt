@@ -32,4 +32,6 @@ sealed class SharedSignUpEvent {
         val navigator: DestinationsNavigator,
         val user: User
     ) : SharedSignUpEvent()
+
+    data class CalculateTheTDEE(val user: User): SharedSignUpEvent()
 }
