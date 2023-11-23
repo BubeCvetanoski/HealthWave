@@ -7,11 +7,11 @@ import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.lifecycle.ViewModel
+import com.example.healthwave.R
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.spec.Direction
-import healthWave.fragments.trainingTracker.presentation.screen.TableCellDataItem
+import healthWave.ui.components.TableCellHeaderItem
 import healthWave.ui.theme.blue_color_level_2
 import healthWave.ui.theme.gray_level_1
 import healthWave.ui.theme.transparent_color
@@ -56,37 +56,6 @@ class HelperFunctions {
             return dateFormat.format(currentDate)
         }
 
-        fun clearTableCellData(
-            tableCellData: List<List<MutableState<TableCellDataItem>>>
-        ) {
-            tableCellData.forEach { row ->
-                row.forEach { cellState ->
-                    cellState.value = cellState.value.copy(
-                        currentText = "",
-                        previousText = "",
-                        hasUnsavedChanges = false
-                    )
-                }
-            }
-        }
-
-        // Function to find the index of the next empty cell in the table
-        fun findNextEmptyCell(
-            currentRowIndex: Int,
-            currentColumnIndex: Int,
-            rows: Int,
-            tableCellData: List<List<MutableState<TableCellDataItem>>>
-        ): Int {
-            for (row in currentRowIndex until rows) {
-                for (column in (if (row == currentRowIndex) currentColumnIndex + 1 else 0) until 4) {
-                    if (tableCellData[row][column].value.currentText.isBlank()) {
-                        return row * 4 + column
-                    }
-                }
-            }
-            return -1 // Return -1 if no empty cell is found
-        }
-
         fun navigateTo(
             screen: Direction,
             popUpToRoute: String,
@@ -128,6 +97,38 @@ class HelperFunctions {
                     }
                 }
             }
+        }
+
+        fun Context.initializeTableCellHeaderItems(): List<TableCellHeaderItem> {
+            val nameColumnWeight = .55f
+            val restColumnWeight = .15f
+
+            return listOf(
+                TableCellHeaderItem(
+                    text = getString(R.string.exercise_name),
+                    weight = nameColumnWeight,
+                    enabled = false,
+                    columnId = 0
+                ),
+                TableCellHeaderItem(
+                    text = getString(R.string.sets),
+                    weight = restColumnWeight,
+                    enabled = false,
+                    columnId = 1
+                ),
+                TableCellHeaderItem(
+                    text = getString(R.string.reps),
+                    weight = restColumnWeight,
+                    enabled = false,
+                    columnId = 2
+                ),
+                TableCellHeaderItem(
+                    text = getString(R.string.load),
+                    weight = restColumnWeight,
+                    enabled = false,
+                    columnId = 3
+                )
+            )
         }
     }
 }

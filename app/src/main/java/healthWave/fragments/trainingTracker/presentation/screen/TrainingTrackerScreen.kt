@@ -20,7 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,7 +43,7 @@ import com.vanpra.composematerialdialogs.datetime.date.DatePickerDefaults
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import healthWave.core.util.HelperFunctions
-import healthWave.data.local.database.entity.Exercise
+import healthWave.fragments.trainingTracker.event.TrainingTrackerEvent
 import healthWave.fragments.trainingTracker.presentation.viewmodel.ExerciseViewModel
 import healthWave.launcher.presentation.viewmodel.SharedUserViewModel
 import healthWave.ui.components.CustomTable
@@ -64,6 +63,7 @@ fun TrainingTrackerScreen(
 ) {
     val context = LocalContext.current
     val state = exerciseViewModel.exerciseState.value
+    val stateSize = state.exercises.size
 
     val dateDialogState = rememberMaterialDialogState()
     var pickADateText by remember {
@@ -115,19 +115,15 @@ fun TrainingTrackerScreen(
 
         if (numberOfExercises != exerciseViewModel.tableCellData!!.size) {
 
-            if (numberOfExercises < state.exercises.size) {
+            if (numberOfExercises < stateSize) {
 
-                numberOfExercises = state.exercises.size
-                selectedIndexExercises = state.exercises.size - 1
+                numberOfExercises = stateSize
+                selectedIndexExercises = stateSize - 1
             }
 
             // Check if the number of exercises has changed -> update the table
-            exerciseViewModel.tableCellData = updateTableCellData(
-                initializeTableCellData(
-                    numberOfExercises,
-                    TableCellDataItem("", "")
-                ),
-                state.exercises
+            exerciseViewModel.onEvent(
+                TrainingTrackerEvent.UpdateCellData(numberOfExercises)
             )
         }
     }
@@ -136,23 +132,20 @@ fun TrainingTrackerScreen(
         pickedDate = newDate
         pickADateText = formattedDate
 
-        exerciseViewModel.getExercisesByDate(formattedDate)
+        exerciseViewModel.onEvent(
+            TrainingTrackerEvent.GetExerciseByDate(formattedDate)
+        )
     }
 
     LaunchedEffect(key1 = state.exercises) {
+        if (numberOfExercises != stateSize) {
 
-        if (numberOfExercises != state.exercises.size) {
-
-            numberOfExercises = state.exercises.size
-            selectedIndexExercises = state.exercises.size - 1
+            numberOfExercises = stateSize
+            selectedIndexExercises = stateSize - 1
 
             // Check if the number of exercises has changed -> update the table
-            exerciseViewModel.tableCellData = updateTableCellData(
-                initializeTableCellData(
-                    numberOfExercises,
-                    TableCellDataItem("", "")
-                ),
-                state.exercises
+            exerciseViewModel.onEvent(
+                TrainingTrackerEvent.UpdateCellData(numberOfExercises)
             )
         }
     }
@@ -163,26 +156,23 @@ fun TrainingTrackerScreen(
             val firstExercise = state.exercises.first()
             pickADateText = firstExercise.date
 
-            numberOfExercises = state.exercises.size
+            numberOfExercises = stateSize
             if (selectedIndexExercises == -1) {
                 // Only set selectedIndexExercises if it hasn't been set before
                 selectedIndexExercises = numberOfExercises - 1
             }
 
-            exerciseViewModel.tableCellData = updateTableCellData(
-                initializeTableCellData(
-                    numberOfExercises,
-                    TableCellDataItem("", "")
-                ),
-                state.exercises
+            exerciseViewModel.onEvent(
+                TrainingTrackerEvent.UpdateCellData(numberOfExercises)
             )
 
         } else {
-            exerciseViewModel.tableCellData =
-                initializeTableCellData(
+            exerciseViewModel.onEvent(
+                TrainingTrackerEvent.InitializeTableCellData(
                     numberOfExercises,
                     TableCellDataItem("", "")
                 )
+            )
         }
     }
 
@@ -280,7 +270,6 @@ fun TrainingTrackerScreen(
                             date = formattedDate,
                             rows = numberOfExercises,
                             tableCellData = tableCellData,
-                            exerciseState = state,
                             exerciseViewModel = exerciseViewModel
                         )
                     }
@@ -288,76 +277,6 @@ fun TrainingTrackerScreen(
             }
         }
     }
-}
-
-private inline fun <reified T> initializeTableCellData(
-    numberOfRows: Int,
-    defaultItem: T
-): List<List<MutableState<T>>> {
-    return List(numberOfRows) {
-        List(4) { mutableStateOf(defaultItem) }
-    }
-}
-
-private fun updateTableCellData(
-    tableCellData: List<List<MutableState<TableCellDataItem>>>,
-    exercises: List<Exercise>
-): List<List<MutableState<TableCellDataItem>>> {
-    val updatedData = tableCellData.toMutableList()
-
-    for (i in exercises.indices) {
-        val exercise = exercises[i]
-
-        if (i < updatedData.size) {
-            val row = updatedData[i]
-            row[0].value = TableCellDataItem(
-                currentText = exercise.name,
-                previousText = exercise.name
-            )
-            row[1].value = TableCellDataItem(
-                currentText = exercise.sets,
-                previousText = exercise.sets
-            )
-            row[2].value = TableCellDataItem(
-                currentText = exercise.reps,
-                previousText = exercise.reps
-            )
-            row[3].value = TableCellDataItem(
-                currentText = exercise.load,
-                previousText = exercise.load
-            )
-        } else {
-            // If there are more exercises than rows, add new rows
-            val newRow = listOf(
-                mutableStateOf(
-                    TableCellDataItem(
-                        currentText = exercise.name,
-                        previousText = exercise.name
-                    )
-                ),
-                mutableStateOf(
-                    TableCellDataItem(
-                        currentText = exercise.sets,
-                        previousText = exercise.sets
-                    )
-                ),
-                mutableStateOf(
-                    TableCellDataItem(
-                        currentText = exercise.reps,
-                        previousText = exercise.reps
-                    )
-                ),
-                mutableStateOf(
-                    TableCellDataItem(
-                        currentText = exercise.load,
-                        previousText = exercise.load
-                    )
-                )
-            )
-            updatedData.add(newRow)
-        }
-    }
-    return updatedData
 }
 
 data class TableCellDataItem(
