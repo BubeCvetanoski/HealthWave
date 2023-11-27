@@ -14,10 +14,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -27,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -43,22 +40,19 @@ import com.vanpra.composematerialdialogs.datetime.date.DatePickerDefaults
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import healthWave.core.util.HelperFunctions
-import healthWave.fragments.trainingTracker.event.TrainingTrackerEvent
+import healthWave.core.util.HelperFunctions.Companion.initializeOutlinedTextFieldColors
+import healthWave.fragments.trainingTracker.presentation.event.TrainingTrackerEvent
 import healthWave.fragments.trainingTracker.presentation.viewmodel.ExerciseViewModel
-import healthWave.launcher.presentation.viewmodel.SharedUserViewModel
 import healthWave.ui.components.CustomTable
 import healthWave.ui.components.LargeDropdownSpinner
+import healthWave.ui.theme.HealthWaveColorScheme
 import healthWave.ui.theme.black_color
-import healthWave.ui.theme.gray_level_1
-import healthWave.ui.theme.transparent_color
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Destination
 @Composable
 fun TrainingTrackerScreen(
-    sharedUserViewModel: SharedUserViewModel = hiltViewModel(),
     exerciseViewModel: ExerciseViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -87,27 +81,7 @@ fun TrainingTrackerScreen(
         }
     }
 
-    val firstLevelColor = remember { mutableStateOf(Color.Unspecified) }
-    val baseColor = remember { mutableStateOf(Color.Unspecified) }
-    val detailsColor = remember { mutableStateOf(Color.Unspecified) }
-    val backgroundColor = remember { mutableStateOf(Color.Unspecified) }
-    val itemsColor = remember { mutableStateOf(Color.Unspecified) }
-
-    firstLevelColor.value = sharedUserViewModel.getHealthWaveFirstLevelColor()
-    baseColor.value = sharedUserViewModel.getHealthWaveColors().first
-    detailsColor.value = sharedUserViewModel.getHealthWaveColors().second
-    backgroundColor.value = sharedUserViewModel.getCurrentApplicationThemeColors().first
-    itemsColor.value = sharedUserViewModel.getCurrentApplicationThemeColors().second
-
-    val spinnerColors = TextFieldDefaults.outlinedTextFieldColors(
-        textColor = black_color,
-        cursorColor = gray_level_1,
-        containerColor = transparent_color,
-        focusedBorderColor = detailsColor.value,
-        unfocusedBorderColor = detailsColor.value,
-        focusedLabelColor = detailsColor.value,
-        unfocusedLabelColor = black_color
-    )
+    val spinnerColors = initializeOutlinedTextFieldColors(textColor = black_color)
 
     val onSpinnerItemSelected: (index: Int, item: String) -> Unit = { index, item ->
         selectedIndexExercises = index
@@ -180,7 +154,7 @@ fun TrainingTrackerScreen(
     Surface(
         modifier = Modifier
             .fillMaxSize(),
-        color = backgroundColor.value
+        color = HealthWaveColorScheme.backgroundColor
     ) {
         if (state.isLoading) {
             Box(
@@ -193,7 +167,7 @@ fun TrainingTrackerScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     CircularProgressIndicator(
-                        color = detailsColor.value,
+                        color = HealthWaveColorScheme.detailsElementsColor,
                         modifier = Modifier.size(50.dp)
                     )
                     Text(
@@ -211,7 +185,7 @@ fun TrainingTrackerScreen(
                 Button(
                     shape = RoundedCornerShape(25.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = detailsColor.value,
+                        containerColor = HealthWaveColorScheme.detailsElementsColor,
                         contentColor = black_color
                     ),
                     onClick = { dateDialogState.show() },
@@ -243,8 +217,8 @@ fun TrainingTrackerScreen(
                         initialDate = pickedDate,
                         yearRange = 1954..2024,
                         colors = DatePickerDefaults.colors(
-                            headerBackgroundColor = detailsColor.value,
-                            dateActiveBackgroundColor = detailsColor.value
+                            headerBackgroundColor = HealthWaveColorScheme.detailsElementsColor,
+                            dateActiveBackgroundColor = HealthWaveColorScheme.detailsElementsColor
                         ),
                         onDateChange = { newDate ->
                             onDatePickerDateChanged(newDate)
@@ -258,15 +232,13 @@ fun TrainingTrackerScreen(
                     selectedIndex = selectedIndexExercises,
                     onItemSelected = { index, item ->
                         onSpinnerItemSelected(index, item)
-                    },
-                    onValidate = {}
+                    }
                 )
                 Spacer(modifier = Modifier.height(10.dp))
 
                 if (numberOfExercises > 0) {
                     exerciseViewModel.tableCellData?.let { tableCellData ->
                         CustomTable(
-                            headerColor = itemsColor.value,
                             date = formattedDate,
                             rows = numberOfExercises,
                             tableCellData = tableCellData,

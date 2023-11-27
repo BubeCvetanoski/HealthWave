@@ -1,6 +1,5 @@
 package healthWave.fragments.calorieTracker.presentation.screen
 
-import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,19 +15,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.twotone.EggAlt
-import androidx.compose.material.icons.twotone.Icecream
-import androidx.compose.material.icons.twotone.LocalDrink
-import androidx.compose.material.icons.twotone.LunchDining
-import androidx.compose.material.icons.twotone.RamenDining
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -39,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -55,21 +45,20 @@ import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.DatePickerDefaults
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
+import healthWave.core.util.HelperFunctions.Companion.initializeEatingOccasionItems
+import healthWave.core.util.HelperFunctions.Companion.initializeOutlinedTextFieldColors
 import healthWave.fragments.calorieTracker.presentation.event.CalorieTrackerEvent
 import healthWave.fragments.calorieTracker.presentation.viewmodel.FoodViewModel
-import healthWave.fragments.calorieTracker.state.OverviewState
 import healthWave.launcher.presentation.viewmodel.SharedUserViewModel
 import healthWave.ui.components.DailyCalorieCountCard
 import healthWave.ui.components.EatingOccasionItemCard
 import healthWave.ui.components.EatingOccasionSearchScreenCard
 import healthWave.ui.components.NutrimentInfo
+import healthWave.ui.theme.HealthWaveColorScheme
 import healthWave.ui.theme.black_color
-import healthWave.ui.theme.gray_level_1
-import healthWave.ui.theme.transparent_color
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Destination
 @Composable
 fun CalorieTrackerScreen(
@@ -92,29 +81,8 @@ fun CalorieTrackerScreen(
             DateTimeFormatter.ofPattern("dd MMM yyyy").format(pickedDate)
         }
     }
-    val userGoalCalories = remember { mutableStateOf("") }
-    val firstLevelColor = remember { mutableStateOf(Color.Unspecified) }
-    val baseColor = remember { mutableStateOf(Color.Unspecified) }
-    val detailsColor = remember { mutableStateOf(Color.Unspecified) }
-    val backgroundColor = remember { mutableStateOf(Color.Unspecified) }
-    val itemsColor = remember { mutableStateOf(Color.Unspecified) }
 
-    userGoalCalories.value = sharedUserViewModel.getGoalCalories()
-    firstLevelColor.value = sharedUserViewModel.getHealthWaveFirstLevelColor()
-    baseColor.value = sharedUserViewModel.getHealthWaveColors().first
-    detailsColor.value = sharedUserViewModel.getHealthWaveColors().second
-    backgroundColor.value = sharedUserViewModel.getCurrentApplicationThemeColors().first
-    itemsColor.value = sharedUserViewModel.getCurrentApplicationThemeColors().second
-
-    val outlinedTextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
-        textColor = black_color,
-        cursorColor = gray_level_1,
-        containerColor = transparent_color,
-        focusedBorderColor = detailsColor.value,
-        unfocusedBorderColor = detailsColor.value,
-        focusedLabelColor = detailsColor.value,
-        unfocusedLabelColor = black_color
-    )
+    val outlinedTextFieldColors = initializeOutlinedTextFieldColors(textColor = black_color)
 
     val onDatePickerDateChanged: (newDate: LocalDate) -> Unit = { newDate ->
         pickedDate = newDate
@@ -127,9 +95,8 @@ fun CalorieTrackerScreen(
     val foodState = foodViewModel.foodState
     val overviewState = foodViewModel.overviewState
 
-    val eatingOccasionItems = initializeEatingOccasionItems(
-        overviewState = overviewState,
-        context = context
+    val eatingOccasionItems = context.initializeEatingOccasionItems(
+        overviewState = overviewState
     )
 
     LaunchedEffect(Unit) {
@@ -145,7 +112,7 @@ fun CalorieTrackerScreen(
     Surface(
         modifier = Modifier
             .fillMaxSize(),
-        color = backgroundColor.value
+        color = HealthWaveColorScheme.backgroundColor
     ) {
         if (overviewState.isLoading) {
             Box(
@@ -158,7 +125,7 @@ fun CalorieTrackerScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     CircularProgressIndicator(
-                        color = detailsColor.value,
+                        color = HealthWaveColorScheme.detailsElementsColor,
                         modifier = Modifier.size(50.dp)
                     )
                     Text(
@@ -178,7 +145,7 @@ fun CalorieTrackerScreen(
                 Button(
                     shape = RoundedCornerShape(25.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = detailsColor.value,
+                        containerColor = HealthWaveColorScheme.detailsElementsColor,
                         contentColor = black_color
                     ),
                     onClick = { dateDialogState.show() },
@@ -210,8 +177,8 @@ fun CalorieTrackerScreen(
                         initialDate = pickedDate,
                         yearRange = 1954..2024,
                         colors = DatePickerDefaults.colors(
-                            headerBackgroundColor = detailsColor.value,
-                            dateActiveBackgroundColor = detailsColor.value
+                            headerBackgroundColor = HealthWaveColorScheme.detailsElementsColor,
+                            dateActiveBackgroundColor = HealthWaveColorScheme.detailsElementsColor
                         ),
                         onDateChange = { newDate ->
                             onDatePickerDateChanged(newDate)
@@ -219,9 +186,9 @@ fun CalorieTrackerScreen(
                     )
                 }
                 DailyCalorieCountCard(
-                    containerColor = firstLevelColor.value,
-                    backgroundColor = backgroundColor.value,
-                    userGoalCalories = userGoalCalories.value,
+                    containerColor = HealthWaveColorScheme.itemsColor,
+                    backgroundColor = HealthWaveColorScheme.backgroundColor,
+                    userGoalCalories = sharedUserViewModel.getGoalCalories(),
                     userDailyCalories = overviewState.overallCalories.toString()
                 )
                 Spacer(modifier = Modifier.height(5.dp))
@@ -276,9 +243,7 @@ fun CalorieTrackerScreen(
                 ) {
                     eatingOccasionItems.forEach { item ->
                         EatingOccasionItemCard(
-                            containerColor = itemsColor.value,
                             icon = item.icon,
-                            iconBackgroundColor = backgroundColor.value,
                             title = item.title,
                             totalCalories = item.calories.toString(),
                             onClick = {
@@ -293,11 +258,7 @@ fun CalorieTrackerScreen(
             if (foodState.isEatingOccasionItemCardExpanded) {
                 EatingOccasionSearchScreenCard(
                     title = title,
-                    themeColor = backgroundColor.value,
-                    detailsColor = detailsColor.value,
-                    firstLevelColor = firstLevelColor.value,
                     outlinedTextFieldColors = outlinedTextFieldColors,
-                    foodItemBorderColor = itemsColor.value,
                     date = formattedDate,
                     foodViewModel = foodViewModel,
                     foodState = foodState,
@@ -316,36 +277,3 @@ data class EatingOccasionItem(
     val title: String,
     val calories: Int = 0
 )
-
-fun initializeEatingOccasionItems(
-    overviewState: OverviewState,
-    context: Context
-): List<EatingOccasionItem> {
-    return listOf(
-        EatingOccasionItem(
-            icon = Icons.TwoTone.EggAlt,
-            title = context.getString(R.string.breakfast),
-            calories = overviewState.breakfastCalories
-        ),
-        EatingOccasionItem(
-            icon = Icons.TwoTone.LunchDining,
-            title = context.getString(R.string.lunch),
-            calories = overviewState.lunchCalories
-        ),
-        EatingOccasionItem(
-            icon = Icons.TwoTone.RamenDining,
-            title = context.getString(R.string.dinner),
-            calories = overviewState.dinnerCalories
-        ),
-        EatingOccasionItem(
-            icon = Icons.TwoTone.Icecream,
-            title = context.getString(R.string.snack),
-            calories = overviewState.snackCalories
-        ),
-        EatingOccasionItem(
-            icon = Icons.TwoTone.LocalDrink,
-            title = context.getString(R.string.water),
-            calories = overviewState.overallWaterIntake
-        )
-    )
-}

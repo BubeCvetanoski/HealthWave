@@ -13,4 +13,7 @@ object Constants {
     const val MOTIVATIONAL_NOTIFICATIONS_CHANNEL_ID = "motivational_channel"
     const val MOTIVATIONAL_NOTIFICATIONS_CHANNEL_NAME = "Motivational Quotes"
     const val MOTIVATIONAL_NOTIFICATIONS_CHANNEL_DESCRIPTION = "Used for the motivational notifications"
+    //Theme
+    const val LIGHT_MODE = "LIGHT MODE"
+    const val DARK_MODE = "DARK MODE"
 }

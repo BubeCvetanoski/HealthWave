@@ -37,7 +37,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.healthwave.R
-import healthWave.fragments.calorieTracker.state.WaterState
+import healthWave.fragments.calorieTracker.presentation.state.WaterState
 import healthWave.ui.theme.black_color
 
 @OptIn(ExperimentalMaterial3Api::class)

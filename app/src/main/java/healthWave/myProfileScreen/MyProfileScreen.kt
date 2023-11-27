@@ -1,6 +1,5 @@
-package healthWave.fragments
+package healthWave.myProfileScreen
 
-import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,12 +27,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -46,42 +43,31 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.healthwave.R
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import healthWave.core.util.HelperFunctions.Companion.navigateTo
+import healthWave.core.util.HelperFunctions.Companion.initializeInformativeTextItem
 import healthWave.data.local.database.entity.User
-import healthWave.destinations.CalorieTrackerScreenDestination
-import healthWave.destinations.MyProfileScreenDestination
-import healthWave.destinations.ProgramsScreenDestination
-import healthWave.destinations.TrainingTrackerScreenDestination
+import healthWave.launcher.presentation.event.SharedSignUpEvent
 import healthWave.launcher.presentation.viewmodel.SharedUserViewModel
 import healthWave.ui.components.InformativeTextComposable
-import healthWave.ui.components.InformativeTextItem
 import healthWave.ui.components.UpdateNameDialog
+import healthWave.ui.theme.HealthWaveColorScheme
 import healthWave.ui.theme.black_color
+import kotlinx.coroutines.launch
 
 @Destination
 @Composable
 fun MyProfileScreen(
     sharedUserViewModel: SharedUserViewModel = hiltViewModel(),
+    myProfileViewModel: MyProfileViewModel = hiltViewModel(),
     navigator: DestinationsNavigator,
     id: Int
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val user = sharedUserViewModel.userState.collectAsState()
-    val informationItems = initializeInformativeTextItem(
-        user = user.value,
-        context = context
+
+    val informationItems = context.initializeInformativeTextItem(
+        user = user.value
     )
-    val shouldShowCustomUpdateNameDialog = remember { mutableStateOf(false) }
-
-    val baseColor = remember { mutableStateOf(Color.Unspecified) }
-    val detailsColor = remember { mutableStateOf(Color.Unspecified) }
-    val backgroundColor = remember { mutableStateOf(Color.Unspecified) }
-    val itemsColor = remember { mutableStateOf(Color.Unspecified) }
-
-    baseColor.value = sharedUserViewModel.getHealthWaveColors().first
-    detailsColor.value = sharedUserViewModel.getHealthWaveColors().second
-    backgroundColor.value = sharedUserViewModel.getCurrentApplicationThemeColors().first
-    itemsColor.value = sharedUserViewModel.getCurrentApplicationThemeColors().second
 
     val myProfilePic: ImageVector = when (user.value.gender) {
         stringResource(id = R.string.male) -> Icons.Filled.Man
@@ -89,43 +75,25 @@ fun MyProfileScreen(
         else -> Icons.Filled.Man
     }
 
-    val onIconClicked = {
-        shouldShowCustomUpdateNameDialog.value = true
-    }
-
-    val onBack = {
-        when (id) {
-            0 -> {
-                navigateTo(
-                    screen = CalorieTrackerScreenDestination,
-                    popUpToRoute = MyProfileScreenDestination.route,
-                    navigator = navigator
+    val onSaveClicked: (String, String) -> Unit = { firstName, lastName ->
+        if (myProfileViewModel.onEvent(
+                MyProfileEvent.OnValidate(firstName, lastName)
+            ) as Boolean
+        ) {
+            scope.launch {
+                sharedUserViewModel.onEvent(
+                    SharedSignUpEvent.UpdateUserFirstAndLastName(firstName, lastName)
                 )
             }
-
-            1 -> {
-                navigateTo(
-                    screen = TrainingTrackerScreenDestination,
-                    popUpToRoute = MyProfileScreenDestination.route,
-                    navigator = navigator
-                )
-            }
-
-            2 -> {
-                navigateTo(
-                    screen = ProgramsScreenDestination,
-                    popUpToRoute = MyProfileScreenDestination.route,
-                    navigator = navigator
-                )
-            }
+            myProfileViewModel.onEvent(MyProfileEvent.OnDismissEditNameDialog)
         }
     }
 
-    BackHandler { onBack() }
+    BackHandler { myProfileViewModel.onEvent(MyProfileEvent.OnBack(id, navigator)) }
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor.value),
+            .background(HealthWaveColorScheme.backgroundColor),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -153,13 +121,13 @@ fun MyProfileScreen(
                 modifier = Modifier
                     .size(80.dp)
                     .clip(CircleShape)
-                    .background(backgroundColor.value)
+                    .background(HealthWaveColorScheme.backgroundColor)
                     .align(Alignment.BottomCenter)
             ) {
                 Icon(
                     imageVector = myProfilePic,
                     contentDescription = stringResource(id = R.string.gender_symbol),
-                    tint = detailsColor.value,
+                    tint = HealthWaveColorScheme.detailsElementsColor,
                     modifier = Modifier
                         .size(width = 40.dp, height = 80.dp)
                         .align(Alignment.Center)
@@ -182,13 +150,15 @@ fun MyProfileScreen(
             Icon(
                 imageVector = Icons.Outlined.Edit,
                 contentDescription = stringResource(id = R.string.edit_name),
-                tint = detailsColor.value,
-                modifier = Modifier.clickable { onIconClicked() }
+                tint = HealthWaveColorScheme.detailsElementsColor,
+                modifier = Modifier.clickable { myProfileViewModel.onEvent(MyProfileEvent.OnEditNameIconClicked) }
             )
-            if (shouldShowCustomUpdateNameDialog.value) {
-                ShowCustomUpdateNameDialog(baseColor.value, sharedUserViewModel, user.value) {
-                    shouldShowCustomUpdateNameDialog.value = false
-                }
+            if (myProfileViewModel.showUpdateNameDialog.value) {
+                ShowUpdateNameDialog(
+                    user = user.value,
+                    onSaveClicked = onSaveClicked,
+                    onDismiss = { myProfileViewModel.onEvent(MyProfileEvent.OnDismissEditNameDialog) }
+                )
             }
         }
         //Text fields under the name of the user
@@ -200,17 +170,16 @@ fun MyProfileScreen(
             informationItems.forEach {
                 InformativeTextComposable(
                     title = it.title,
-                    text = it.text,
-                    itemsColor.value
+                    text = it.text
                 )
             }
             Button(
                 shape = RoundedCornerShape(25.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = baseColor.value,
+                    containerColor = HealthWaveColorScheme.baseElementsColor,
                     contentColor = black_color
                 ),
-                onClick = { onBack() }
+                onClick = { myProfileViewModel.onEvent(MyProfileEvent.OnBack(id, navigator)) }
             ) {
                 Text(
                     text = stringResource(id = R.string.back),
@@ -221,46 +190,15 @@ fun MyProfileScreen(
     }
 }
 
-private fun initializeInformativeTextItem(
-    user: User,
-    context: Context
-): List<InformativeTextItem> {
-
-    return listOf(
-        InformativeTextItem(
-            title = context.getString(R.string.gender),
-            text = user.gender
-        ),
-        InformativeTextItem(
-            title = context.getString(R.string.age),
-            text = user.age
-        ),
-        InformativeTextItem(
-            title = context.getString(R.string.height),
-            text = user.height
-        ),
-        InformativeTextItem(
-            title = context.getString(R.string.weight),
-            text = user.weight
-        ),
-        InformativeTextItem(
-            title = context.getString(R.string.goal),
-            text = user.goal + " with " + user.calories + " calories"
-        )
-    )
-}
-
 @Composable
-fun ShowCustomUpdateNameDialog(
-    containerColor: Color,
-    sharedUserViewModel: SharedUserViewModel,
+fun ShowUpdateNameDialog(
     user: User,
+    onSaveClicked: (firstName: String, lastName: String) -> Unit,
     onDismiss: () -> Unit
 ) {
     UpdateNameDialog(
-        containerColor = containerColor,
-        sharedUserViewModel = sharedUserViewModel,
         user = user,
+        onSaveClicked = onSaveClicked,
         onDismiss = onDismiss
     )
 }

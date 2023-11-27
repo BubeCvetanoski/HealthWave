@@ -18,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -26,12 +25,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.healthwave.R
-import healthWave.fragments.calorieTracker.state.FoodNutrimentsInfoState
+import healthWave.fragments.calorieTracker.presentation.state.FoodNutrimentsInfoState
+import healthWave.ui.theme.HealthWaveColorScheme
 import healthWave.ui.theme.transparent_color
 
 @Composable
 fun FoodItemCardAdded(
-    foodItemCardBackgroundColor: Color,
     foodNutrimentsInfoState: FoodNutrimentsInfoState,
     onDeleteFood: () -> Unit,
     onBack: () -> Unit
@@ -39,7 +38,7 @@ fun FoodItemCardAdded(
     val food = foodNutrimentsInfoState.food
     val foodAmount = foodNutrimentsInfoState.amount
 
-    var backgroundColor = foodItemCardBackgroundColor
+    var backgroundColor = HealthWaveColorScheme.firstLevelColor
 
     val tapHandler = {
         backgroundColor = transparent_color

@@ -13,6 +13,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val notificationService = MotivationalNotificationsService(applicationContext)
+
         setContent {
             App(notificationService = notificationService)
         }

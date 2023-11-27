@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.twotone.LocalFireDepartment
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.healthwave.R
+import healthWave.ui.theme.black_color
 
 @Composable
 fun DailyCalorieCountCard(
@@ -58,9 +59,9 @@ fun DailyCalorieCountCard(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.LocalFireDepartment,
+                    imageVector = Icons.TwoTone.LocalFireDepartment,
                     contentDescription = stringResource(id = R.string.daily_calorie_intake),
-                    tint = containerColor,
+                    tint = black_color,
                     modifier = Modifier
                         .padding(5.dp)
                         .size(50.dp)

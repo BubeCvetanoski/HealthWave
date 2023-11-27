@@ -27,7 +27,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -41,19 +40,16 @@ import com.example.healthwave.R
 import healthWave.core.util.HelperFunctions.Companion.CollectUiEvents
 import healthWave.fragments.calorieTracker.domain.model.MealType
 import healthWave.fragments.calorieTracker.presentation.event.CalorieTrackerEvent
+import healthWave.fragments.calorieTracker.presentation.state.FoodState
 import healthWave.fragments.calorieTracker.presentation.viewmodel.FoodViewModel
-import healthWave.fragments.calorieTracker.state.FoodState
+import healthWave.ui.theme.HealthWaveColorScheme
 import healthWave.ui.theme.transparent_color
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalCoilApi::class)
 @Composable
 fun EatingOccasionSearchScreenCard(
     title: String,
-    themeColor: Color,
-    detailsColor: Color,
-    firstLevelColor: Color,
     outlinedTextFieldColors: TextFieldColors,
-    foodItemBorderColor: Color,
     date: String,
     foodViewModel: FoodViewModel,
     foodState: FoodState,
@@ -64,7 +60,7 @@ fun EatingOccasionSearchScreenCard(
         title == stringResource(id = R.string.water) //If it is clicked from Water Item Card, then this composable will have different look
 
     val keyboardController = LocalSoftwareKeyboardController.current
-    var backgroundColor = themeColor
+    var backgroundColor = HealthWaveColorScheme.backgroundColor
 
     val tapHandler = {
         backgroundColor = transparent_color
@@ -90,7 +86,7 @@ fun EatingOccasionSearchScreenCard(
     }
 
     if (isWaterState) {
-        LaunchedEffect(key1 = Unit) {
+        LaunchedEffect(Unit) {
             foodViewModel.onEvent(CalorieTrackerEvent.GetWaterByDate(date))
         }
     }
@@ -164,9 +160,6 @@ fun EatingOccasionSearchScreenCard(
                             FoodItemHeader(
                                 modifier = Modifier.fillMaxWidth(),
                                 expandedFromWhichState = stringResource(id = R.string.added),
-                                foodItemBorderColor = foodItemBorderColor,
-                                outlinedTextFieldColors = outlinedTextFieldColors,
-                                firstLevelColor = firstLevelColor,
                                 foodNutrimentsInfoState = it,
                                 onDeleteFood = {
                                     foodViewModel.onEvent(
@@ -213,10 +206,7 @@ fun EatingOccasionSearchScreenCard(
                                     )
                                 },
                                 expandedFromWhichState = stringResource(id = R.string.searched),
-                                modifier = Modifier.fillMaxWidth(),
-                                foodItemBorderColor = foodItemBorderColor,
-                                outlinedTextFieldColors = outlinedTextFieldColors,
-                                firstLevelColor = firstLevelColor
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
                     }
@@ -243,7 +233,7 @@ fun EatingOccasionSearchScreenCard(
             }
             Spacer(modifier = Modifier.height(10.dp))
             WaterItemHeaderAdd(
-                waterItemBorderColor = foodItemBorderColor,
+                waterItemBorderColor = HealthWaveColorScheme.itemsColor,
                 outlinedTextFieldColors = outlinedTextFieldColors,
                 backgroundColor = backgroundColor,
                 takeWaterIntake = foodState.takeWaterIntake,
@@ -267,7 +257,6 @@ fun EatingOccasionSearchScreenCard(
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(foodState.waterIntakeInfo) {
                     WaterHeaderItemAdded(
-                        waterItemCardBackgroundColor = firstLevelColor,
                         waterIntakeInfoState = it,
                         onDeleteWater = {
                             foodViewModel.onEvent(
@@ -291,7 +280,7 @@ fun EatingOccasionSearchScreenCard(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 CircularProgressIndicator(
-                    color = detailsColor,
+                    color = HealthWaveColorScheme.detailsElementsColor,
                     modifier = Modifier.size(50.dp)
                 )
                 Text(

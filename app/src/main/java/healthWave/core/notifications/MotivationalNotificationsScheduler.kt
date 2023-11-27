@@ -18,7 +18,7 @@ class MotivationalNotificationsScheduler(private val context: Context) {
         )
 
         // Set the alarm to trigger every three hours
-        val intervalMillis = 3 * 60 * 60 * 1000
+        val intervalMillis = 5 * 60 * 60 * 1000
         val triggerAtMillis = System.currentTimeMillis()
 
         alarmManager.setInexactRepeating(

@@ -22,21 +22,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.healthwave.R
+import healthWave.ui.theme.HealthWaveColorScheme
 import healthWave.ui.theme.black_color
 import healthWave.ui.theme.gray_level_1
 
 @Composable
 fun EatingOccasionItemCard(
-    containerColor: Color,
     icon: ImageVector,
-    iconBackgroundColor: Color,
     title: String,
     totalCalories: String,
     onClick: () -> Unit
@@ -48,7 +46,7 @@ fun EatingOccasionItemCard(
             .clip(RoundedCornerShape(25.dp))
             .clickable { onClick() },
         colors = CardDefaults.cardColors(
-            containerColor = containerColor
+            containerColor = HealthWaveColorScheme.itemsColor
         )
     ) {
         Row(
@@ -62,7 +60,7 @@ fun EatingOccasionItemCard(
                 modifier = Modifier
                     .clip(CircleShape)
                     .size(30.dp)
-                    .background(iconBackgroundColor),
+                    .background(HealthWaveColorScheme.backgroundColor),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -96,7 +94,7 @@ fun EatingOccasionItemCard(
                 modifier = Modifier
                     .clip(CircleShape)
                     .size(20.dp)
-                    .background(iconBackgroundColor),
+                    .background(HealthWaveColorScheme.itemsColor),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(

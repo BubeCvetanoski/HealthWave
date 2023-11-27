@@ -1,4 +1,4 @@
-package healthWave.fragments.calorieTracker.state
+package healthWave.fragments.calorieTracker.presentation.state
 
 data class WaterState(
     val id: Int? = null,

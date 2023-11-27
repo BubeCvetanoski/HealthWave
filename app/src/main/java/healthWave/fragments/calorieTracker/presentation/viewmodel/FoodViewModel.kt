@@ -17,10 +17,10 @@ import healthWave.fragments.calorieTracker.domain.model.FoodNutrimentsInfo
 import healthWave.fragments.calorieTracker.domain.model.MealType
 import healthWave.fragments.calorieTracker.domain.useCase.FoodUseCases
 import healthWave.fragments.calorieTracker.presentation.event.CalorieTrackerEvent
-import healthWave.fragments.calorieTracker.state.FoodNutrimentsInfoState
-import healthWave.fragments.calorieTracker.state.FoodState
-import healthWave.fragments.calorieTracker.state.OverviewState
-import healthWave.fragments.calorieTracker.state.WaterState
+import healthWave.fragments.calorieTracker.presentation.state.FoodNutrimentsInfoState
+import healthWave.fragments.calorieTracker.presentation.state.FoodState
+import healthWave.fragments.calorieTracker.presentation.state.OverviewState
+import healthWave.fragments.calorieTracker.presentation.state.WaterState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.launchIn
@@ -132,6 +132,7 @@ class FoodViewModel @Inject constructor(
     private fun getFoodOverviewByDate(
         date: String
     ) {
+        //todo make isLoading to be set to true and false only once
         overviewState = overviewState.copy(
             isLoading = true,
             overallCalories = 0,
@@ -277,6 +278,7 @@ class FoodViewModel @Inject constructor(
                     date = date
                 )
             )
+            getFoodOverviewByDate(date = date)
             _uiEvent.send(
                 UiEvent.ShowToast(
                     UiText.StringResource(resId = R.string.successfully_added)
@@ -406,7 +408,6 @@ class FoodViewModel @Inject constructor(
     private fun deleteFood(
         date: String,
         food: FoodNutrimentsInfo
-
     ) {
         viewModelScope.launch {
             food.id?.let { foodUseCases.deleteFoodById(it) }

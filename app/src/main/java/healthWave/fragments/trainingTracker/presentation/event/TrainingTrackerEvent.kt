@@ -1,4 +1,4 @@
-package healthWave.fragments.trainingTracker.event
+package healthWave.fragments.trainingTracker.presentation.event
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.focus.FocusRequester

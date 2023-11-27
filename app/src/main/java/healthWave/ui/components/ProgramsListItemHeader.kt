@@ -13,15 +13,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import healthWave.fragments.programs.presentation.ProgramsListItem
+import healthWave.ui.theme.HealthWaveColorScheme
 
 @Composable
 fun ProgramsListItemHeader(
-    cardHeaderColor: Color,
     program: ProgramsListItem,
     onClick: () -> Unit
 ) {
@@ -33,7 +32,7 @@ fun ProgramsListItemHeader(
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = cardHeaderColor
+            containerColor = HealthWaveColorScheme.itemsColor
         )
     ) {
         Box(

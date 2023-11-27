@@ -59,7 +59,7 @@ fun <T> LargeDropdownSpinner(
     items: List<T>,
     onItemSelected: (index: Int, item: T) -> Unit,
     selectedItemToString: (T) -> String = { it.toString() },
-    onValidate: () -> Unit,
+    onValidate: () -> Unit = {},
     drawItem: @Composable (T, Boolean, Boolean, () -> Unit) -> Unit = { item, selected, itemEnabled, onClick ->
         LargeDropdownSpinnerItem(
             text = item.toString(),

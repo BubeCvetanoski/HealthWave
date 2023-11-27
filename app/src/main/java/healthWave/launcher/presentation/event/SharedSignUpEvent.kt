@@ -34,4 +34,5 @@ sealed class SharedSignUpEvent {
     ) : SharedSignUpEvent()
 
     data class CalculateTheTDEE(val user: User): SharedSignUpEvent()
+    data class UpdateUserFirstAndLastName(val firstName: String, val lastName: String): SharedSignUpEvent()
 }

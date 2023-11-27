@@ -16,12 +16,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -30,16 +28,14 @@ import androidx.compose.ui.unit.sp
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.healthwave.R
-import healthWave.fragments.calorieTracker.state.FoodNutrimentsInfoState
+import healthWave.fragments.calorieTracker.presentation.state.FoodNutrimentsInfoState
+import healthWave.ui.theme.HealthWaveColorScheme
 
 @ExperimentalCoilApi
 @Composable
 fun FoodItemHeader(
     modifier: Modifier = Modifier,
     expandedFromWhichState: String,
-    foodItemBorderColor: Color,
-    outlinedTextFieldColors: TextFieldColors,
-    firstLevelColor: Color,
     foodNutrimentsInfoState: FoodNutrimentsInfoState,
     onChangeFoodAmount: (String) -> Unit = {},
     onInsertFood: () -> Unit = {},
@@ -62,7 +58,7 @@ fun FoodItemHeader(
                     .border(
                         border = BorderStroke(
                             width = 1.dp,
-                            color = foodItemBorderColor
+                            color = HealthWaveColorScheme.itemsColor
                         ),
                         shape = RoundedCornerShape(5.dp)
                     ),
@@ -126,8 +122,6 @@ fun FoodItemHeader(
     }
     if (isFoodItemHeaderExpanded && expandedFromWhichState == stringResource(id = R.string.searched)) {
         FoodItemCardSearched(
-            outlinedTextFieldColors = outlinedTextFieldColors,
-            foodItemCardBackgroundColor = firstLevelColor,
             foodNutrimentsInfoState = foodNutrimentsInfoState,
             onChangeFoodAmount = onChangeFoodAmount,
             onInsertFood = onInsertFood,
@@ -135,7 +129,6 @@ fun FoodItemHeader(
         )
     } else if (isFoodItemHeaderExpanded && expandedFromWhichState == stringResource(id = R.string.added)) {
         FoodItemCardAdded(
-            foodItemCardBackgroundColor = firstLevelColor,
             foodNutrimentsInfoState = foodNutrimentsInfoState,
             onDeleteFood = onDeleteFood,
             onBack = onFoodItemHeaderExpanded

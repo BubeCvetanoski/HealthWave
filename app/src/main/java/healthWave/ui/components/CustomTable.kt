@@ -38,16 +38,16 @@ import androidx.compose.ui.unit.dp
 import com.example.healthwave.R
 import healthWave.core.util.HelperFunctions.Companion.CollectUiEvents
 import healthWave.core.util.HelperFunctions.Companion.initializeTableCellHeaderItems
-import healthWave.fragments.trainingTracker.event.TrainingTrackerEvent
+import healthWave.fragments.trainingTracker.presentation.event.TrainingTrackerEvent
 import healthWave.fragments.trainingTracker.presentation.screen.TableCellDataItem
 import healthWave.fragments.trainingTracker.presentation.viewmodel.ExerciseViewModel
+import healthWave.ui.theme.HealthWaveColorScheme
 import healthWave.ui.theme.black_color
 import healthWave.ui.theme.transparent_color
 import healthWave.ui.theme.white_color
 
 @Composable
 fun CustomTable(
-    headerColor: Color,
     date: String,
     rows: Int,
     tableCellData: List<List<MutableState<TableCellDataItem>>>,
@@ -75,7 +75,7 @@ fun CustomTable(
         ) {
             // Here is the header of the table
             item {
-                Row(Modifier.background(headerColor)) {
+                Row(Modifier.background(HealthWaveColorScheme.itemsColor)) {
                     tableCellHeaderItems.forEach { headerItem ->
                         TableCell(
                             text = headerItem.text,
@@ -98,7 +98,7 @@ fun CustomTable(
                             modifier = Modifier
                                 .background(
                                     if (cellState.value.hasUnsavedChanges)
-                                        headerColor
+                                        Color.Yellow
                                     else transparent_color
                                 ),
                             focusRequester = focusRequester,

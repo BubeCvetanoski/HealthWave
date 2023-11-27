@@ -3,7 +3,6 @@ package healthWave.launcher.presentation.viewmodel
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -11,6 +10,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.healthwave.R
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import healthWave.core.util.Constants.DARK_MODE
+import healthWave.core.util.Constants.LIGHT_MODE
 import healthWave.core.util.HelperFunctions.Companion.navigateTo
 import healthWave.core.util.UiEvent
 import healthWave.core.util.UiText
@@ -23,16 +24,8 @@ import healthWave.destinations.SplashScreenDestination
 import healthWave.launcher.domain.useCase.database.UserUseCases
 import healthWave.launcher.domain.useCase.datastore.DataStoreUseCases
 import healthWave.launcher.presentation.event.SharedSignUpEvent
-import healthWave.ui.theme.blue_color_level_1
+import healthWave.ui.theme.HealthWaveColorScheme
 import healthWave.ui.theme.blue_color_level_2
-import healthWave.ui.theme.blue_color_level_6
-import healthWave.ui.theme.dark_mode_background_color
-import healthWave.ui.theme.dark_mode_items_color
-import healthWave.ui.theme.light_mode_background_color
-import healthWave.ui.theme.light_mode_items_color
-import healthWave.ui.theme.pink_color_level_1
-import healthWave.ui.theme.pink_color_level_2
-import healthWave.ui.theme.pink_color_level_6
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -64,6 +57,7 @@ class SharedUserViewModel @Inject constructor(
     val expandedActivitySpinner get() = _expandedActivitySpinner.value
 
     private val _themeState = mutableStateOf("")
+    val themeState get() = _themeState
     private val _notificationsChoice = mutableStateOf("")
 
     private var getUserJob: Job? = null
@@ -79,46 +73,41 @@ class SharedUserViewModel @Inject constructor(
     @OptIn(ExperimentalComposeUiApi::class)
     fun onEvent(event: SharedSignUpEvent): Any {
         return when (event) {
-            is SharedSignUpEvent.ValidateSignUpSplashScreen -> {
-                validateSplashScreen(
-                    navigator = event.navigator
-                )
-            }
+            is SharedSignUpEvent.ValidateSignUpSplashScreen -> validateSplashScreen(
+                navigator = event.navigator
+            )
 
-            is SharedSignUpEvent.ValidateSignUpFirstScreen -> {
-                validateSignUpFirstScreen(
-                    firstNameFocusRequester = event.firstNameFocusRequester,
-                    lastNameFocusRequester = event.lastNameFocusRequester,
-                    softwareKeyboardController = event.softwareKeyboardController,
-                    navigator = event.navigator,
-                    user = event.user
-                )
-            }
+            is SharedSignUpEvent.ValidateSignUpFirstScreen -> validateSignUpFirstScreen(
+                firstNameFocusRequester = event.firstNameFocusRequester,
+                lastNameFocusRequester = event.lastNameFocusRequester,
+                softwareKeyboardController = event.softwareKeyboardController,
+                navigator = event.navigator,
+                user = event.user
+            )
 
-            is SharedSignUpEvent.ValidateSignUpSecondScreen -> {
-                validateSignUpSecondScreen(
-                    ageFocusRequester = event.ageFocusRequester,
-                    heightFocusRequester = event.heightFocusRequester,
-                    weightFocusRequester = event.weightFocusRequester,
-                    navigator = event.navigator,
-                    user = event.user
-                )
-            }
+            is SharedSignUpEvent.ValidateSignUpSecondScreen -> validateSignUpSecondScreen(
+                ageFocusRequester = event.ageFocusRequester,
+                heightFocusRequester = event.heightFocusRequester,
+                weightFocusRequester = event.weightFocusRequester,
+                navigator = event.navigator,
+                user = event.user
+            )
 
-            is SharedSignUpEvent.ValidateSignUpThirdScreen -> {
-                validateSignUpThirdScreen(
-                    selectedIndexResults = event.selectedIndexResults,
-                    resultsList = event.resultsList,
-                    navigator = event.navigator,
-                    user = event.user
-                )
-            }
+            is SharedSignUpEvent.ValidateSignUpThirdScreen -> validateSignUpThirdScreen(
+                selectedIndexResults = event.selectedIndexResults,
+                resultsList = event.resultsList,
+                navigator = event.navigator,
+                user = event.user
+            )
 
-            is SharedSignUpEvent.CalculateTheTDEE -> {
-                calculateTheTDEE(
-                    user = event.user
-                )
-            }
+            is SharedSignUpEvent.CalculateTheTDEE -> calculateTheTDEE(
+                user = event.user
+            )
+
+            is SharedSignUpEvent.UpdateUserFirstAndLastName -> updateUserFirstAndLastName(
+                event.firstName,
+                event.lastName
+            )
         }
     }
 
@@ -164,7 +153,7 @@ class SharedUserViewModel @Inject constructor(
         }
     }
 
-    fun updateUserFirstAndLastName(firstName: String, lastName: String) {
+    private fun updateUserFirstAndLastName(firstName: String, lastName: String) {
         viewModelScope.launch {
             userUseCases.updateUserFirstAndLastName(firstName, lastName)
             _userState.value = userState.value.copy(
@@ -202,6 +191,10 @@ class SharedUserViewModel @Inject constructor(
             updateUser(user)
         } else {
             addUser(user)
+            HealthWaveColorScheme.initialize(
+                gender = user.gender,
+                applicationTheme = _themeState.value
+            )
         }
         navigateTo(
             screen = CalorieTrackerScreenDestination,
@@ -336,12 +329,20 @@ class SharedUserViewModel @Inject constructor(
 
     private fun validateSplashScreen(navigator: DestinationsNavigator) {
         if (_userState.value.id != null) {
+            HealthWaveColorScheme.initialize(
+                gender = _userState.value.gender,
+                applicationTheme = _themeState.value
+            )
             navigateTo(
                 screen = CalorieTrackerScreenDestination,
                 popUpToRoute = SplashScreenDestination.route,
                 navigator = navigator
             )
         } else {
+            HealthWaveColorScheme.setDetailsElementsColor(
+                color = blue_color_level_2
+            )// se setira bojata vo sina vtoro nivo, bidejkji ako nema kreirano user znaci nema gender, znaci e prv vlez na aplikacijata i togash bojata na detalite
+            // treba da bide sina, zaradi toa sto treba da se vklopuva so bojata na detalite pozadinata ( slikata Now or Never )
             navigateTo(
                 screen = SignUpFirstScreenDestination(user = User()),
                 popUpToRoute = SplashScreenDestination.route,
@@ -397,22 +398,6 @@ class SharedUserViewModel @Inject constructor(
         return _userState.value.calories
     }
 
-    fun getHealthWaveColors(): Pair<Color, Color> {
-        return when (_userState.value.gender) {
-            "Male" -> Pair(blue_color_level_2, blue_color_level_6)
-            "Female" -> Pair(pink_color_level_2, pink_color_level_6)
-            else -> Pair(blue_color_level_2, blue_color_level_6)
-        }
-    }
-
-    fun getHealthWaveFirstLevelColor(): Color {
-        return when (_userState.value.gender) {
-            "Male" -> blue_color_level_1
-            "Female" -> pink_color_level_1
-            else -> blue_color_level_1
-        }
-    }
-
     //Datastore functions
     private fun readApplicationTheme() {
         readApplicationThemeJob?.cancel()
@@ -428,19 +413,13 @@ class SharedUserViewModel @Inject constructor(
             dataStoreUseCases.saveApplicationTheme(themeValue)
             _themeState.value = themeValue
         }
+        HealthWaveColorScheme.setBackgroundColor(themeValue)
+        HealthWaveColorScheme.setItemsColor(themeValue)
     }
 
     fun getNewApplicationTheme(): String {
-        return if (_themeState.value == "LIGHT MODE") "DARK MODE"
-        else "LIGHT MODE"
-    }
-
-    fun getCurrentApplicationThemeColors(): Pair<Color, Color> {
-        return when (_themeState.value) {
-            "DARK MODE" -> Pair(dark_mode_background_color, dark_mode_items_color)
-            "LIGHT MODE" -> Pair(light_mode_background_color, light_mode_items_color)
-            else -> Pair(light_mode_background_color, light_mode_items_color)
-        }
+        return if (_themeState.value == LIGHT_MODE) DARK_MODE
+        else LIGHT_MODE
     }
 
     private fun readNotificationsChoice() {

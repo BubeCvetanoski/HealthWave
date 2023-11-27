@@ -13,9 +13,9 @@ import healthWave.core.util.UiEvent
 import healthWave.core.util.UiText
 import healthWave.data.local.database.entity.Exercise
 import healthWave.fragments.trainingTracker.domain.useCase.ExerciseUseCases
-import healthWave.fragments.trainingTracker.event.TrainingTrackerEvent
+import healthWave.fragments.trainingTracker.presentation.event.TrainingTrackerEvent
 import healthWave.fragments.trainingTracker.presentation.screen.TableCellDataItem
-import healthWave.fragments.trainingTracker.state.ExerciseState
+import healthWave.fragments.trainingTracker.presentation.state.ExerciseState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.launchIn
@@ -48,11 +48,7 @@ class ExerciseViewModel @Inject constructor(
             is TrainingTrackerEvent.GetExerciseByDate -> getExercisesByDate(event.date)
             is TrainingTrackerEvent.UpdateCellData -> updateTableCellData(event.numberOfExercises)
             is TrainingTrackerEvent.UpdateExercises -> updateExercises(event.exercises)
-            is TrainingTrackerEvent.InitializeTableCellData -> initializeTableCellData(
-                event.numberOfExercises,
-                event.defaultItem
-            )
-
+            is TrainingTrackerEvent.InitializeTableCellData -> initializeTableCellData(event.numberOfExercises, event.defaultItem)
             is TrainingTrackerEvent.OnApplyClicked -> onApplyClicked(event.date)
             is TrainingTrackerEvent.OnCustomTableTextChanged -> onCustomTableTextChanged(
                 event.cellState,
@@ -60,7 +56,6 @@ class ExerciseViewModel @Inject constructor(
                 event.rowIndex,
                 event.columnIndex
             )
-
             is TrainingTrackerEvent.OnCustomTableNextClicked -> onCustomTableNextClicked(
                 event.rowIndex,
                 event.columnIndex,
@@ -68,7 +63,6 @@ class ExerciseViewModel @Inject constructor(
                 event.focusRequester,
                 event.focusRequesters
             )
-
             is TrainingTrackerEvent.ClearTableCellData -> clearTableCellData()
         }
     }
@@ -304,7 +298,7 @@ class ExerciseViewModel @Inject constructor(
         )
     }
 
-    private fun clearTableCellData() {
+    fun clearTableCellData() {
         tableCellData!!.forEach { row ->
             row.forEach { cellState ->
                 cellState.value = cellState.value.copy(
@@ -315,6 +309,7 @@ class ExerciseViewModel @Inject constructor(
             }
         }
     }
+
 
     private fun onCustomTableTextChanged(
         cellState: MutableState<TableCellDataItem>,
@@ -332,7 +327,6 @@ class ExerciseViewModel @Inject constructor(
         )
         tableCellData!![rowIndex][columnIndex].value = updatedCellContent
     }
-
     private fun updateRows(
         tableCellData: List<List<MutableState<TableCellDataItem>>>,
         exercises: List<Exercise>

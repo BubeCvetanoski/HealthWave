@@ -11,19 +11,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -33,69 +29,31 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.example.healthwave.R
+import healthWave.core.util.HelperFunctions.Companion.initializeOutlinedTextFieldColors
 import healthWave.core.util.UiEvent
 import healthWave.core.util.UiText
 import healthWave.data.local.database.entity.User
-import healthWave.launcher.presentation.viewmodel.SharedUserViewModel
+import healthWave.ui.theme.HealthWaveColorScheme
 import healthWave.ui.theme.black_color
-import healthWave.ui.theme.blue_color_level_6
-import healthWave.ui.theme.gray_level_1
-import healthWave.ui.theme.pink_color_level_6
-import healthWave.ui.theme.transparent_color
-import healthWave.ui.theme.white_color
-import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun UpdateNameDialog(
-    containerColor: Color,
     user: User,
-    sharedUserViewModel: SharedUserViewModel,
+    onSaveClicked: (String, String) -> Unit,
     onDismiss: () -> Unit
 ) {
     val keyBoardController = LocalSoftwareKeyboardController.current
-    val scope = rememberCoroutineScope()
     val firstName = remember { mutableStateOf(user.firstName) }
     val lastName = remember { mutableStateOf(user.lastName) }
     val firstNameFocusRequester = remember { FocusRequester() }
     val lastNameFocusRequester = remember { FocusRequester() }
-    val detailsColor = remember { mutableStateOf(blue_color_level_6) }
-
-    val onSaveClicked = {
-        if (onValidate(
-                user.firstName,
-                user.lastName
-            )
-        ) {
-            scope.launch {
-                sharedUserViewModel.updateUserFirstAndLastName(
-                    user.firstName,
-                    user.lastName
-                )
-            }
-            onDismiss()
-        }
-    }
 
     val buttonsModifier = Modifier
         .fillMaxWidth()
         .padding(8.dp)
 
-    detailsColor.value = when (user.gender) {
-        stringResource(id = R.string.male) -> blue_color_level_6
-        stringResource(id = R.string.female) -> pink_color_level_6
-        else -> blue_color_level_6
-    }
-
-    val colors = TextFieldDefaults.outlinedTextFieldColors(
-        textColor = white_color,
-        cursorColor = gray_level_1,
-        containerColor = transparent_color,
-        focusedBorderColor = detailsColor.value,
-        unfocusedBorderColor = detailsColor.value,
-        focusedLabelColor = detailsColor.value,
-        unfocusedLabelColor = white_color
-    )
+    val colors = initializeOutlinedTextFieldColors()
 
     AlertDialog(
         title = {
@@ -156,7 +114,7 @@ fun UpdateNameDialog(
                 }
             }
         },
-        containerColor = containerColor,
+        containerColor = HealthWaveColorScheme.baseElementsColor,
         onDismissRequest = { onDismiss() },
         confirmButton = {
             Row(
@@ -165,11 +123,11 @@ fun UpdateNameDialog(
             ) {
                 TextButton(
                     colors = ButtonDefaults.textButtonColors(
-                        containerColor = containerColor,
+                        containerColor = HealthWaveColorScheme.baseElementsColor,
                         contentColor = black_color
                     ),
                     onClick = {
-                        onSaveClicked()
+                        onSaveClicked(firstName.value, lastName.value)
                     }
                 ) {
                     Text(text = stringResource(id = R.string.save))
@@ -177,7 +135,7 @@ fun UpdateNameDialog(
                 Spacer(modifier = Modifier.width(8.dp))
                 TextButton(
                     colors = ButtonDefaults.textButtonColors(
-                        containerColor = containerColor,
+                        containerColor = HealthWaveColorScheme.baseElementsColor,
                         contentColor = black_color
                     ),
                     onClick = { onDismiss() }
@@ -210,20 +168,4 @@ private fun addFocusOnNext(
         UiText.StringResource(resId = R.string.in_order_to_proceed_click)
     )
     softwareKeyboardController?.hide()
-}
-
-private fun onValidate(firstName: String, lastName: String): Boolean {
-    if (firstName == "" || firstName.length < 2) {
-        UiEvent.ShowToast(
-            UiText.StringResource(resId = R.string.fill_in_first_name)
-        )
-        return false
-    }
-    if (lastName == "" || lastName.length < 2) {
-        UiEvent.ShowToast(
-            UiText.StringResource(resId = R.string.fill_in_last_name)
-        )
-        return false
-    }
-    return true
 }

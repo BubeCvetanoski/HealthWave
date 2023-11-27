@@ -1,11 +1,13 @@
 package healthWave
 
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,6 +33,7 @@ import healthWave.ui.components.CustomNavigationDrawer
 import healthWave.ui.components.CustomTopAppBar
 import healthWave.ui.components.CustomYesNoDialog
 import healthWave.ui.components.SampleScaffold
+import healthWave.ui.theme.HealthWaveColorScheme
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -51,21 +54,16 @@ fun App(notificationService: MotivationalNotificationsService) {
     val shouldShowNotificationsDialog = remember { mutableStateOf(false) }
     val shouldShowThemeDialog = remember { mutableStateOf(false) }
 
-    val baseColor = remember { mutableStateOf(Color.Unspecified) }
-    val detailsColor = remember { mutableStateOf(Color.Unspecified) }
-    val backgroundColor = remember { mutableStateOf(Color.Unspecified) }
-    val itemsColor = remember { mutableStateOf(Color.Unspecified) }
-
     val newTheme = remember { mutableStateOf("") }
     val newNotificationsChoice = remember { mutableStateOf("") }
-
     newTheme.value = sharedUserViewModel.getNewApplicationTheme()
     newNotificationsChoice.value = sharedUserViewModel.getNewNotificationsChoice()
 
-    baseColor.value = sharedUserViewModel.getHealthWaveColors().first
-    detailsColor.value = sharedUserViewModel.getHealthWaveColors().second
-    backgroundColor.value = sharedUserViewModel.getCurrentApplicationThemeColors().first
-    itemsColor.value = sharedUserViewModel.getCurrentApplicationThemeColors().second
+    HealthWaveColorScheme.initialize(
+        user.value.gender,
+        sharedUserViewModel.themeState.value
+    )
+    val healthWaveColors = HealthWaveColorScheme.instance
 
     val fragmentDestinationIdentifier: FragmentsDestinationIdentifier =
         when (currentDestination) {
@@ -76,6 +74,7 @@ fun App(notificationService: MotivationalNotificationsService) {
                     id = 0
                 )
             }
+
             TrainingTrackerScreenDestination -> {
                 shouldShowScaffoldBar.value = true
                 FragmentsDestinationIdentifier(
@@ -83,6 +82,7 @@ fun App(notificationService: MotivationalNotificationsService) {
                     id = 1
                 )
             }
+
             ProgramsScreenDestination -> {
                 shouldShowScaffoldBar.value = true
                 FragmentsDestinationIdentifier(
@@ -90,11 +90,13 @@ fun App(notificationService: MotivationalNotificationsService) {
                     id = 2
                 )
             }
+
             else -> {
                 shouldShowScaffoldBar.value = false
                 FragmentsDestinationIdentifier(
                     title = stringResource(id = R.string.app_name),
-                    id = -1)
+                    id = -1
+                )
             }
         }
 
@@ -117,6 +119,7 @@ fun App(notificationService: MotivationalNotificationsService) {
                 User(
                     firstName = it.value.firstName,
                     lastName = it.value.lastName,
+                    gender = it.value.gender,
                     id = it.value.id
                 )
             }
@@ -158,36 +161,39 @@ fun App(notificationService: MotivationalNotificationsService) {
     }
 
     if (shouldShowScaffoldBar.value) {
+        Log.i("TEST", HealthWaveColorScheme.backgroundColor.toString())
         CustomNavigationDrawer(
-            backgroundColor = itemsColor.value,
+            backgroundColor = HealthWaveColorScheme.itemsColor,
             drawerState = drawerState,
             content = {
                 SampleScaffold(
                     topBar = {
                         CustomTopAppBar(
                             title = fragmentDestinationIdentifier.title,
-                            backgroundColor = backgroundColor.value,
-                            barColor = baseColor.value
+                            backgroundColor = HealthWaveColorScheme.backgroundColor,
+                            barColor = HealthWaveColorScheme.baseElementsColor
                         ) { onMenuClicked() }
                     },
                     bottomBar = {
                         AnimatedBottomNavigationBar(
-                            backgroundColor = backgroundColor.value,
-                            barColor = baseColor.value,
-                            ballColor = detailsColor.value,
+                            backgroundColor = HealthWaveColorScheme.backgroundColor,
+                            barColor = HealthWaveColorScheme.baseElementsColor,
+                            ballColor = HealthWaveColorScheme.detailsElementsColor,
                             destinationIndex = fragmentDestinationIdentifier.id,
                             navController = navController
                         )
                     }
                 ) { paddingValues ->
-                    DestinationsNavHost(
-                        engine = engine,
-                        navController = navController,
-                        navGraph = NavGraphs.root,
-                        modifier = Modifier
-                            .padding(paddingValues)
-                            .fillMaxSize()
-                    )
+                    CompositionLocalProvider(HealthWaveColorScheme.LocalAppTheme provides healthWaveColors) {
+                        DestinationsNavHost(
+                            engine = engine,
+                            navController = navController,
+                            navGraph = NavGraphs.root,
+                            modifier = Modifier
+                                .padding(paddingValues)
+                                .fillMaxSize()
+                        )
+                    }
                 }
             },
             onMyProfileClicked = onMyProfileClicked,
@@ -197,7 +203,7 @@ fun App(notificationService: MotivationalNotificationsService) {
         )
         if (shouldShowNotificationsDialog.value) {
             ShowNotificationsDialog(
-                containerColor = baseColor.value,
+                containerColor = HealthWaveColorScheme.baseElementsColor,
                 turnOnOrOff = newNotificationsChoice.value,
                 onDismiss = { shouldShowNotificationsDialog.value = false },
                 onConfirm = { onNotificationDialogConfirm() }
@@ -205,7 +211,7 @@ fun App(notificationService: MotivationalNotificationsService) {
         }
         if (shouldShowThemeDialog.value) {
             ShowAppearanceDialog(
-                containerColor = baseColor.value,
+                containerColor = HealthWaveColorScheme.baseElementsColor,
                 turnDarkOrLight = newTheme.value,
                 onDismiss = { shouldShowThemeDialog.value = false },
                 onConfirm = { onAppearanceDialogConfirm() }
@@ -231,7 +237,8 @@ fun ShowNotificationsDialog(
     containerColor: Color,
     turnOnOrOff: String,
     onDismiss: () -> Unit,
-    onConfirm: () -> Job) {
+    onConfirm: () -> Job
+) {
     CustomYesNoDialog(
         title = stringResource(id = R.string.notifications),
         questionText = "Do you want to turn $turnOnOrOff the notifications?",

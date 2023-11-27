@@ -22,12 +22,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
@@ -40,14 +38,15 @@ import androidx.compose.ui.unit.sp
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.healthwave.R
-import healthWave.fragments.calorieTracker.state.FoodNutrimentsInfoState
+import healthWave.core.util.HelperFunctions.Companion.initializeOutlinedTextFieldColors
+import healthWave.fragments.calorieTracker.presentation.state.FoodNutrimentsInfoState
+import healthWave.ui.theme.HealthWaveColorScheme
+import healthWave.ui.theme.black_color
 import healthWave.ui.theme.transparent_color
 
 @OptIn(ExperimentalCoilApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun FoodItemCardSearched(
-    outlinedTextFieldColors: TextFieldColors,
-    foodItemCardBackgroundColor: Color,
     foodNutrimentsInfoState: FoodNutrimentsInfoState,
     onInsertFood: () -> Unit,
     onChangeFoodAmount: (String) -> Unit,
@@ -55,7 +54,8 @@ fun FoodItemCardSearched(
 ) {
     val food = foodNutrimentsInfoState.food
 
-    var backgroundColor = foodItemCardBackgroundColor
+    val outlinedTextFieldColors = initializeOutlinedTextFieldColors(textColor = black_color)
+    var backgroundColor = HealthWaveColorScheme.firstLevelColor
 
     val tapHandler = {
         backgroundColor = transparent_color

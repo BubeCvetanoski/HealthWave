@@ -3,7 +3,7 @@ package healthWave.fragments.calorieTracker.presentation.event
 import healthWave.fragments.calorieTracker.domain.model.Food
 import healthWave.fragments.calorieTracker.domain.model.FoodNutrimentsInfo
 import healthWave.fragments.calorieTracker.domain.model.MealType
-import healthWave.fragments.calorieTracker.state.WaterState
+import healthWave.fragments.calorieTracker.presentation.state.WaterState
 
 sealed class CalorieTrackerEvent {
 
