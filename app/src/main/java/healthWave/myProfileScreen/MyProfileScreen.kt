@@ -76,10 +76,7 @@ fun MyProfileScreen(
     }
 
     val onSaveClicked: (String, String) -> Unit = { firstName, lastName ->
-        if (myProfileViewModel.onEvent(
-                MyProfileEvent.OnValidate(firstName, lastName)
-            ) as Boolean
-        ) {
+        if (myProfileViewModel.onEvent(MyProfileEvent.OnValidate(firstName, lastName)) as Boolean) {
             scope.launch {
                 sharedUserViewModel.onEvent(
                     SharedSignUpEvent.UpdateUserFirstAndLastName(firstName, lastName)

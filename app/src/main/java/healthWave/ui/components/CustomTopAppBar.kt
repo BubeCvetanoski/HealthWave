@@ -27,7 +27,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.healthwave.R
-import healthWave.ui.theme.white_color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,7 +75,7 @@ fun CustomTopAppBar(
             },
             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                 containerColor = barColor,
-                navigationIconContentColor = white_color
+                navigationIconContentColor = backgroundColor
             ),
             modifier = Modifier.shadow(
                 15.dp, RoundedCornerShape(

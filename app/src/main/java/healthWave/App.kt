@@ -1,6 +1,5 @@
 package healthWave
 
-import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerValue
@@ -59,6 +58,7 @@ fun App(notificationService: MotivationalNotificationsService) {
     newTheme.value = sharedUserViewModel.getNewApplicationTheme()
     newNotificationsChoice.value = sharedUserViewModel.getNewNotificationsChoice()
 
+    //it must be initialized here because here is the first time where the colors are accessed
     HealthWaveColorScheme.initialize(
         user.value.gender,
         sharedUserViewModel.themeState.value
@@ -161,7 +161,6 @@ fun App(notificationService: MotivationalNotificationsService) {
     }
 
     if (shouldShowScaffoldBar.value) {
-        Log.i("TEST", HealthWaveColorScheme.backgroundColor.toString())
         CustomNavigationDrawer(
             backgroundColor = HealthWaveColorScheme.itemsColor,
             drawerState = drawerState,

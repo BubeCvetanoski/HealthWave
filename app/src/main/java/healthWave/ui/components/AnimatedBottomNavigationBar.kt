@@ -46,7 +46,6 @@ import healthWave.destinations.CalorieTrackerScreenDestination
 import healthWave.destinations.DirectionDestination
 import healthWave.destinations.ProgramsScreenDestination
 import healthWave.destinations.TrainingTrackerScreenDestination
-import healthWave.ui.theme.light_mode_background_color
 import healthWave.ui.theme.white_color
 
 @Composable
@@ -116,7 +115,7 @@ fun AnimatedBottomNavigationBar(
                         imageVector = if (selectedIndex == item.ordinal) item.selectedIcon
                         else item.unselectedIcon,
                         tint = if (selectedIndex == item.ordinal) white_color
-                        else light_mode_background_color
+                        else backgroundColor
                     )
                 }
             }

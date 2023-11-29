@@ -329,10 +329,6 @@ class SharedUserViewModel @Inject constructor(
 
     private fun validateSplashScreen(navigator: DestinationsNavigator) {
         if (_userState.value.id != null) {
-            HealthWaveColorScheme.initialize(
-                gender = _userState.value.gender,
-                applicationTheme = _themeState.value
-            )
             navigateTo(
                 screen = CalorieTrackerScreenDestination,
                 popUpToRoute = SplashScreenDestination.route,
