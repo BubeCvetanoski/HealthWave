@@ -1,5 +1,6 @@
 package healthWave.fragments.calorieTracker.presentation.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -23,6 +24,10 @@ import healthWave.fragments.calorieTracker.presentation.state.OverviewState
 import healthWave.fragments.calorieTracker.presentation.state.WaterState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -34,11 +39,11 @@ class FoodViewModel @Inject constructor(
     private val foodUseCases: FoodUseCases
 ) : ViewModel() {
 
-    var foodState by mutableStateOf(FoodState())
-        private set
+    private val _foodState = MutableStateFlow(FoodState())
+    val foodState get() = _foodState.asStateFlow()
 
-    var overviewState by mutableStateOf(OverviewState())
-        private set
+    private val _overviewState = MutableStateFlow(OverviewState())
+    val overviewState get() = _overviewState.asStateFlow()
 
     private var shouldEmitValue by mutableStateOf(true)
     // A flag to prevent emitting a new value after insert in database
@@ -107,7 +112,7 @@ class FoodViewModel @Inject constructor(
                 water = event.water
             )
 
-            is CalorieTrackerEvent.OnQueryChange -> onQueryChange(
+            is CalorieTrackerEvent.QueryChange -> onQueryChange(
                 query = event.query
             )
 
@@ -124,7 +129,7 @@ class FoodViewModel @Inject constructor(
                 mealType = event.mealType
             )
 
-            CalorieTrackerEvent.OnSearch -> onSearch()
+            CalorieTrackerEvent.Search -> onSearch()
             CalorieTrackerEvent.EatingOccasionItemExpanded -> eatingOccasionItemExpanded()
         }
     }
@@ -132,77 +137,41 @@ class FoodViewModel @Inject constructor(
     private fun getFoodOverviewByDate(
         date: String
     ) {
-        //todo make isLoading to be set to true and false only once
-        overviewState = overviewState.copy(
-            isLoading = true,
-            overallCalories = 0,
-            breakfastCalories = 0,
-            lunchCalories = 0,
-            dinnerCalories = 0,
-            snackCalories = 0,
-            overallCarbs = 0,
-            overallProteins = 0,
-            overallFats = 0,
-            overallWaterIntake = 0
-        )
-        getFoodByDateJob?.cancel()
-        getFoodByDateJob = foodUseCases
-            .getFoodByDate(date)
-            .onEach { foods ->
-                if (foods.isEmpty()) {
-                    overviewState = overviewState.copy(
-                        isLoading = false
-                    )
-                    return@onEach
-                }
-                val summary = calculateCaloriesAndNutrients(foods)
+        _overviewState.value = overviewState.value.copy(isLoading = true)
 
-                // Fetch overall calories
-                val overallCalories = summary.calorieMap.values.sum()
+        val foodFlow = foodUseCases.getFoodByDate(date)
+        val waterFlow = foodUseCases.getWaterByDate(date)
 
-                // Fetch overall nutrients
-                val overallCarbs = summary.nutrientMap["carbs"] ?: 0
-                val overallProteins = summary.nutrientMap["proteins"] ?: 0
-                val overallFats = summary.nutrientMap["fats"] ?: 0
+        foodFlow.combine(waterFlow) { foods, waters ->
+            val summary = calculateCaloriesAndNutrients(foods)
 
-                // Map individual meal type calories
-                val breakfastCalories = summary.calorieMap[MealType.Breakfast] ?: 0
-                val lunchCalories = summary.calorieMap[MealType.Lunch] ?: 0
-                val dinnerCalories = summary.calorieMap[MealType.Dinner] ?: 0
-                val snackCalories = summary.calorieMap[MealType.Snack] ?: 0
+            val overallCalories = summary.calorieMap.values.sum()
+            val overallCarbs = summary.nutrientMap["carbs"] ?: 0
+            val overallProteins = summary.nutrientMap["proteins"] ?: 0
+            val overallFats = summary.nutrientMap["fats"] ?: 0
 
-                overviewState = overviewState.copy(
-                    overallCalories = overallCalories,
-                    breakfastCalories = breakfastCalories,
-                    lunchCalories = lunchCalories,
-                    dinnerCalories = dinnerCalories,
-                    snackCalories = snackCalories,
-                    overallCarbs = overallCarbs,
-                    overallProteins = overallProteins,
-                    overallFats = overallFats
-                )
-            }.launchIn(viewModelScope)
+            val breakfastCalories = summary.calorieMap[MealType.Breakfast] ?: 0
+            val lunchCalories = summary.calorieMap[MealType.Lunch] ?: 0
+            val dinnerCalories = summary.calorieMap[MealType.Dinner] ?: 0
+            val snackCalories = summary.calorieMap[MealType.Snack] ?: 0
 
-        getWaterByDateJob?.cancel()
-        getWaterByDateJob = foodUseCases
-            .getWaterByDate(date)
-            .onEach { waters ->
-                if (waters.isEmpty()) {
-                    overviewState = overviewState.copy(
-                        isLoading = false
-                    )
-                    return@onEach
-                }
-                var overallWaterIntake = 0
+            val overallWaterIntake = waters.sumOf { it.milliliters.toInt() }
 
-                waters.forEach { water ->
-                    overallWaterIntake += water.milliliters.toInt()
-                }
-                overviewState = overviewState.copy(
-                    isLoading = false,
-                    overallWaterIntake = overallWaterIntake
-                )
-            }.launchIn(viewModelScope)
+            _overviewState.value = overviewState.value.copy(
+                isLoading = false,
+                overallCalories = overallCalories,
+                breakfastCalories = breakfastCalories,
+                lunchCalories = lunchCalories,
+                dinnerCalories = dinnerCalories,
+                snackCalories = snackCalories,
+                overallCarbs = overallCarbs,
+                overallProteins = overallProteins,
+                overallFats = overallFats,
+                overallWaterIntake = overallWaterIntake
+            )
+        }.catch { exception ->
+            exception.localizedMessage?.let { Log.d("Test", it) }
+        }.launchIn(viewModelScope)
     }
 
     private fun calculateCaloriesAndNutrients(
@@ -226,7 +195,7 @@ class FoodViewModel @Inject constructor(
     private fun getWaterByDate(
         date: String
     ) {
-        foodState = foodState.copy(
+        _foodState.value = foodState.value.copy(
             isLoading = true,
             waterIntakeInfo = emptyList()
         )
@@ -234,7 +203,7 @@ class FoodViewModel @Inject constructor(
         getWaterByDateJob = foodUseCases
             .getWaterByDate(date)
             .onEach { waters ->
-                foodState = foodState.copy(
+                _foodState.value = foodState.value.copy(
                     isLoading = false,
                     waterIntakeInfo = waters.map { water ->
                         WaterState(
@@ -253,10 +222,10 @@ class FoodViewModel @Inject constructor(
         viewModelScope.launch {
             water.id?.let { foodUseCases.deleteWaterById(it) }
 
-            val updatedWaterIntakeInfo = foodState.waterIntakeInfo.filter {
+            val updatedWaterIntakeInfo = _foodState.value.waterIntakeInfo.filter {
                 it.id != water.id
             }
-            foodState = foodState.copy(waterIntakeInfo = updatedWaterIntakeInfo)
+            _foodState.value = foodState.value.copy(waterIntakeInfo = updatedWaterIntakeInfo)
             _uiEvent.send(
                 UiEvent.ShowToast(
                     UiText.StringResource(resId = R.string.successfully_deleted)
@@ -292,7 +261,7 @@ class FoodViewModel @Inject constructor(
         mealType: MealType = MealType.fromString("")
     ) {
         getWaterByDateJob?.cancel()
-        foodState = foodState.copy(
+        _foodState.value = foodState.value.copy(
             isLoading = true,
             foodNutrimentsInfo = emptyList()
         )
@@ -307,7 +276,7 @@ class FoodViewModel @Inject constructor(
                         foods
                     }
                 if (shouldEmitValue) {
-                    foodState = foodState.copy(
+                    _foodState.value = foodState.value.copy(
                         foodNutrimentsInfo = filteredFoods.map { food ->
                             FoodNutrimentsInfoState(
                                 food = FoodNutrimentsInfo(
@@ -330,18 +299,18 @@ class FoodViewModel @Inject constructor(
     }
 
     private fun onQueryChange(query: String) {
-        foodState = foodState.copy(query = query)
+        _foodState.value = foodState.value.copy(query = query)
     }
 
     private fun eatingOccasionItemExpanded() {
-        foodState = foodState.copy(
-            isEatingOccasionItemCardExpanded = !foodState.isEatingOccasionItemCardExpanded
+        _foodState.value = foodState.value.copy(
+            isEatingOccasionItemCardExpanded = !foodState.value.isEatingOccasionItemCardExpanded
         )
     }
 
     private fun resetRememberedState(flag: Boolean) {
         if (flag) {
-            foodState = foodState.copy(
+            _foodState.value = foodState.value.copy(
                 foodNutrimentsInfo = emptyList(),
                 viewMyMeals = false
             )
@@ -349,7 +318,7 @@ class FoodViewModel @Inject constructor(
     }
 
     private fun setEatingOccasionItemCardExpanded(flag: Boolean) {
-        foodState = foodState.copy(
+        _foodState.value = foodState.value.copy(
             isEatingOccasionItemCardExpanded = flag
         )
     }
@@ -357,8 +326,8 @@ class FoodViewModel @Inject constructor(
     private fun foodItemHeaderExpanded(
         food: FoodNutrimentsInfo
     ) {
-        foodState = foodState.copy(
-            foodNutrimentsInfo = foodState.foodNutrimentsInfo.map {
+        _foodState.value = foodState.value.copy(
+            foodNutrimentsInfo = _foodState.value.foodNutrimentsInfo.map {
                 if (it.food == food) {
                     it.copy(
                         isFoodItemHeaderExpanded = !it.isFoodItemHeaderExpanded
@@ -372,8 +341,8 @@ class FoodViewModel @Inject constructor(
         food: FoodNutrimentsInfo,
         amount: String
     ) {
-        foodState = foodState.copy(
-            foodNutrimentsInfo = foodState.foodNutrimentsInfo.map {
+        _foodState.value = foodState.value.copy(
+            foodNutrimentsInfo = _foodState.value.foodNutrimentsInfo.map {
                 if (it.food == food) {
                     it.copy(amount = amount)
                 } else it
@@ -384,8 +353,8 @@ class FoodViewModel @Inject constructor(
     private fun changeWaterMilliliters(
         newMilliliters: String
     ) {
-        foodState = foodState.copy(
-            takeWaterIntake = foodState.takeWaterIntake.copy(
+        _foodState.value = foodState.value.copy(
+            takeWaterIntake = _foodState.value.takeWaterIntake.copy(
                 milliliters = newMilliliters
             )
         )
@@ -396,7 +365,7 @@ class FoodViewModel @Inject constructor(
         mealType: MealType
     ) {
         shouldEmitValue = true
-        foodState = foodState.copy(
+        _foodState.value = foodState.value.copy(
             viewMyMeals = true
         )
         getFoodByDate(
@@ -412,10 +381,10 @@ class FoodViewModel @Inject constructor(
         viewModelScope.launch {
             food.id?.let { foodUseCases.deleteFoodById(it) }
 
-            val updatedFoodNutrimentsInfo = foodState.foodNutrimentsInfo.filter {
+            val updatedFoodNutrimentsInfo = _foodState.value.foodNutrimentsInfo.filter {
                 it.food.id != food.id
             }
-            foodState = foodState.copy(foodNutrimentsInfo = updatedFoodNutrimentsInfo)
+            _foodState.value = foodState.value.copy(foodNutrimentsInfo = updatedFoodNutrimentsInfo)
             _uiEvent.send(
                 UiEvent.ShowToast(
                     UiText.StringResource(resId = R.string.successfully_deleted)
@@ -432,7 +401,7 @@ class FoodViewModel @Inject constructor(
         mealType: MealType
     ) {
         viewModelScope.launch {
-            val uiState = foodState.foodNutrimentsInfo.find { it.food == food }
+            val uiState = _foodState.value.foodNutrimentsInfo.find { it.food == food }
 
             foodUseCases.insertFood(
                 food = uiState?.food ?: return@launch,
@@ -452,13 +421,13 @@ class FoodViewModel @Inject constructor(
 
     private fun onSearch() {
         viewModelScope.launch {
-            foodState = foodState.copy(
+            _foodState.value = foodState.value.copy(
                 isLoading = true,
                 viewMyMeals = false,
                 foodNutrimentsInfo = emptyList()
             )
             foodUseCases
-                .searchFood(foodState.query)
+                .searchFood(_foodState.value.query)
                 .onSuccess { foods ->
                     if (foods.isEmpty()) {
                         _uiEvent.send(
@@ -467,7 +436,7 @@ class FoodViewModel @Inject constructor(
                             )
                         )
                     }
-                    foodState = foodState.copy(
+                    _foodState.value = foodState.value.copy(
                         foodNutrimentsInfo = foods.map {
                             FoodNutrimentsInfoState(it)
                         },
@@ -479,11 +448,11 @@ class FoodViewModel @Inject constructor(
                     shouldEmitValue = true
                     getFoodByNameJob?.cancel()
                     getFoodByNameJob = foodUseCases
-                        .getFoodByName(foodState.query)
+                        .getFoodByName(_foodState.value.query)
                         .onEach { foods ->
                             if (shouldEmitValue) {
                                 if (foods.isEmpty()) {
-                                    foodState = foodState.copy(
+                                    _foodState.value = foodState.value.copy(
                                         isLoading = false,
                                         query = ""
                                     )
@@ -494,7 +463,7 @@ class FoodViewModel @Inject constructor(
                                     )
                                     return@onEach
                                 }
-                                foodState = foodState.copy(
+                                _foodState.value = foodState.value.copy(
                                     foodNutrimentsInfo = foods.map { food ->
                                         FoodNutrimentsInfoState(
                                             food = FoodNutrimentsInfo(
@@ -512,7 +481,7 @@ class FoodViewModel @Inject constructor(
                                     query = ""
                                 )
                             } else {
-                                foodState = foodState.copy(
+                                _foodState.value = foodState.value.copy(
                                     isLoading = false,
                                     query = ""
                                 )

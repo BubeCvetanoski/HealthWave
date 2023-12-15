@@ -1,4 +1,4 @@
-package healthWave.myProfileScreen
+package healthWave.myProfileScreen.viewmodel
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -13,6 +13,7 @@ import healthWave.destinations.CalorieTrackerScreenDestination
 import healthWave.destinations.MyProfileScreenDestination
 import healthWave.destinations.ProgramsScreenDestination
 import healthWave.destinations.TrainingTrackerScreenDestination
+import healthWave.myProfileScreen.event.MyProfileEvent
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,10 +24,10 @@ class MyProfileViewModel @Inject constructor() : ViewModel() {
 
     fun onEvent(event: MyProfileEvent): Any {
         return when(event) {
-            is MyProfileEvent.OnBack -> onBack(event.id, event.navigator)
-            MyProfileEvent.OnDismissEditNameDialog -> onDismissEditNameDialog()
-            MyProfileEvent.OnEditNameIconClicked -> onEditNameIconClicked()
-            is MyProfileEvent.OnValidate -> onValidate(event.firstName, event.lastName)
+            is MyProfileEvent.BackClicked -> onBack(event.id, event.navigator)
+            is MyProfileEvent.DismissEditNameDialog -> onDismissEditNameDialog()
+            is MyProfileEvent.EditNameIconClicked -> onEditNameIconClicked()
+            is MyProfileEvent.ValidateFirstAndLastName -> onValidate(event.firstName, event.lastName)
         }
     }
 

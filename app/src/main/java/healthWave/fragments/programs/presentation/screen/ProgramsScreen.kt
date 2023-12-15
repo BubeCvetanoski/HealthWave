@@ -1,4 +1,4 @@
-package healthWave.fragments.programs.presentation
+package healthWave.fragments.programs.presentation.screen
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -19,6 +20,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.healthwave.R
 import com.ramcosta.composedestinations.annotation.Destination
 import healthWave.core.util.HelperFunctions
+import healthWave.fragments.programs.presentation.viewmodel.ProgramsViewModel
+import healthWave.fragments.programs.presentation.event.ProgramsEvent
 import healthWave.ui.components.LargeDropdownSpinner
 import healthWave.ui.components.ProgramsListItemCard
 import healthWave.ui.components.ProgramsListItemHeader
@@ -31,6 +34,7 @@ fun ProgramsScreen(
     programsViewModel: ProgramsViewModel = hiltViewModel()
 ) {
     val spinnerColors = HelperFunctions.initializeOutlinedTextFieldColors(textColor = black_color)
+    val state = programsViewModel.programsState.collectAsState().value
 
     BackHandler {}
     Surface(
@@ -47,10 +51,10 @@ fun ProgramsScreen(
                 label = stringResource(id = R.string.number_of_days),
                 colors = spinnerColors,
                 items = programsViewModel.spinnerList,
-                selectedIndex = programsViewModel.selectedIndexDays,
+                selectedIndex = state.selectedIndexDays,
                 onItemSelected = { index, item ->
                     programsViewModel.onEvent(
-                        ProgramsEvent.OnProgramsItemSelected(index, item)
+                        ProgramsEvent.ProgramsItemSelected(index, item)
                     )
                 }
             )
@@ -62,19 +66,19 @@ fun ProgramsScreen(
                         program = item,
                         onClick = {
                             programsViewModel.onEvent(
-                                ProgramsEvent.OnProgramsListHeaderClicked(item)
+                                ProgramsEvent.ProgramsListHeaderClicked(item)
                             )
                         }
                     )
                 }
             }
         }
-        if (programsViewModel.isProgramExpanded) {
+        if (state.isProgramExpanded) {
             ProgramsListItemCard(
-                program = programsViewModel.program,
+                program = state.program,
                 onClick = {
                     programsViewModel.onEvent(
-                        ProgramsEvent.OnProgramsListItemCardClicked
+                        ProgramsEvent.ProgramsListItemCardClicked
                     )
                 }
             )

@@ -144,11 +144,11 @@ fun EatingOccasionSearchScreenCard(
                 colors = outlinedTextFieldColors,
                 text = foodState.query,
                 onValueChange = { newQuery ->
-                    foodViewModel.onEvent(CalorieTrackerEvent.OnQueryChange(newQuery))
+                    foodViewModel.onEvent(CalorieTrackerEvent.QueryChange(newQuery))
                 },
                 onSearch = {
                     keyboardController?.hide()
-                    foodViewModel.onEvent(CalorieTrackerEvent.OnSearch)
+                    foodViewModel.onEvent(CalorieTrackerEvent.Search)
                 }
             )
             Spacer(modifier = Modifier.height(10.dp))

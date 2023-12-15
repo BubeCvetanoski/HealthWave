@@ -15,7 +15,7 @@ class MainActivity : ComponentActivity() {
         val notificationService = MotivationalNotificationsService(applicationContext)
 
         setContent {
-            App(notificationService = notificationService)
+            AppDestinations(notificationService = notificationService)
         }
     }
 }

@@ -105,7 +105,7 @@ fun CustomTable(
                             keyboardType = if (columnIndex == 0) KeyboardType.Text else KeyboardType.Number,
                             onNext = {
                                 exerciseViewModel.onEvent(
-                                    TrainingTrackerEvent.OnCustomTableNextClicked(
+                                    TrainingTrackerEvent.CustomTableNextClicked(
                                         rowIndex,
                                         columnIndex,
                                         rows,
@@ -116,7 +116,7 @@ fun CustomTable(
                             },
                             onTextChanged = { newText ->
                                 exerciseViewModel.onEvent(
-                                    TrainingTrackerEvent.OnCustomTableTextChanged(
+                                    TrainingTrackerEvent.CustomTableTextChanged(
                                         cellState,
                                         newText,
                                         rowIndex,
@@ -153,7 +153,7 @@ fun CustomTable(
                 elevation = FloatingActionButtonDefaults.elevation(4.dp),
                 onClick = {
                     exerciseViewModel.onEvent(
-                        TrainingTrackerEvent.OnApplyClicked(date)
+                        TrainingTrackerEvent.ApplyClicked(date)
                     )
                 }
             ) {

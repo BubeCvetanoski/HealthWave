@@ -22,6 +22,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,6 +50,7 @@ import healthWave.core.util.HelperFunctions.Companion.initializeEatingOccasionIt
 import healthWave.core.util.HelperFunctions.Companion.initializeOutlinedTextFieldColors
 import healthWave.fragments.calorieTracker.presentation.event.CalorieTrackerEvent
 import healthWave.fragments.calorieTracker.presentation.viewmodel.FoodViewModel
+import healthWave.launcher.presentation.event.SharedSignUpEvent
 import healthWave.launcher.presentation.viewmodel.SharedUserViewModel
 import healthWave.ui.components.DailyCalorieCountCard
 import healthWave.ui.components.EatingOccasionItemCard
@@ -92,8 +94,8 @@ fun CalorieTrackerScreen(
             CalorieTrackerEvent.GetFoodOverviewByDate(formattedDate)
         )
     }
-    val foodState = foodViewModel.foodState
-    val overviewState = foodViewModel.overviewState
+    val foodState = foodViewModel.foodState.collectAsState().value
+    val overviewState = foodViewModel.overviewState.collectAsState().value
 
     val eatingOccasionItems = context.initializeEatingOccasionItems(
         overviewState = overviewState
@@ -188,7 +190,7 @@ fun CalorieTrackerScreen(
                 DailyCalorieCountCard(
                     containerColor = HealthWaveColorScheme.itemsColor,
                     backgroundColor = HealthWaveColorScheme.backgroundColor,
-                    userGoalCalories = sharedUserViewModel.getGoalCalories(),
+                    userGoalCalories = sharedUserViewModel.onEvent(SharedSignUpEvent.GetGoalCalories) as String,
                     userDailyCalories = overviewState.overallCalories.toString()
                 )
                 Spacer(modifier = Modifier.height(5.dp))

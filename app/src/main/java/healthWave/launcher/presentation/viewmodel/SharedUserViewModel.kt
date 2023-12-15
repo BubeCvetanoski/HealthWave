@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.healthwave.R
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import healthWave.core.notifications.MotivationalNotificationsService
 import healthWave.core.util.Constants.DARK_MODE
 import healthWave.core.util.Constants.LIGHT_MODE
 import healthWave.core.util.HelperFunctions.Companion.navigateTo
@@ -56,8 +57,8 @@ class SharedUserViewModel @Inject constructor(
     private val _expandedActivitySpinner = mutableStateOf(false)
     val expandedActivitySpinner get() = _expandedActivitySpinner.value
 
-    private val _themeState = mutableStateOf("")
-    val themeState get() = _themeState
+    private val _applicationTheme = mutableStateOf("")
+    val applicationTheme get() = _applicationTheme
     private val _notificationsChoice = mutableStateOf("")
 
     private var getUserJob: Job? = null
@@ -108,6 +109,18 @@ class SharedUserViewModel @Inject constructor(
                 event.firstName,
                 event.lastName
             )
+
+            is SharedSignUpEvent.ApplyTheme -> applyTheme(
+                event.value
+            )
+            is SharedSignUpEvent.ScheduleOrCancelNotifications -> scheduleOrCancelNotifications(
+                event.notificationsChoice,
+                event.notificationService
+            )
+            SharedSignUpEvent.GetGoalCalories -> getGoalCalories()
+            SharedSignUpEvent.GetNewApplicationTheme -> getNewApplicationTheme()
+            SharedSignUpEvent.GetNewNotificationsChoice -> getNewNotificationsChoice()
+
         }
     }
 
@@ -193,7 +206,7 @@ class SharedUserViewModel @Inject constructor(
             addUser(user)
             HealthWaveColorScheme.initialize(
                 gender = user.gender,
-                applicationTheme = _themeState.value
+                applicationTheme = _applicationTheme.value
             )
         }
         navigateTo(
@@ -390,7 +403,7 @@ class SharedUserViewModel @Inject constructor(
         }
     }
 
-    fun getGoalCalories(): String {
+    private fun getGoalCalories(): String {
         return _userState.value.calories
     }
 
@@ -399,22 +412,26 @@ class SharedUserViewModel @Inject constructor(
         readApplicationThemeJob?.cancel()
         readApplicationThemeJob = dataStoreUseCases.readApplicationTheme()
             .onEach { theme ->
-                _themeState.value = theme
+                _applicationTheme.value = theme
             }
             .launchIn(viewModelScope)
     }
 
-    fun saveTheme(themeValue: String) {
+    private fun applyTheme(themeValue: String) {
         viewModelScope.launch {
             dataStoreUseCases.saveApplicationTheme(themeValue)
-            _themeState.value = themeValue
+            _applicationTheme.value = themeValue
         }
+        setTheme(themeValue)
+    }
+
+    private fun setTheme(themeValue: String) {
         HealthWaveColorScheme.setBackgroundColor(themeValue)
         HealthWaveColorScheme.setItemsColor(themeValue)
     }
 
-    fun getNewApplicationTheme(): String {
-        return if (_themeState.value == LIGHT_MODE) DARK_MODE
+    private fun getNewApplicationTheme(): String {
+        return if (_applicationTheme.value == LIGHT_MODE) DARK_MODE
         else LIGHT_MODE
     }
 
@@ -427,15 +444,29 @@ class SharedUserViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    fun saveNotificationsChoice(notificationsChoice: String) {
+    private fun saveNotificationsChoice(notificationsChoice: String) {
         viewModelScope.launch {
             dataStoreUseCases.saveNotificationsChoice(notificationsChoice)
             _notificationsChoice.value = notificationsChoice
         }
     }
 
-    fun getNewNotificationsChoice(): String {
+    private fun getNewNotificationsChoice(): String {
         return if (_notificationsChoice.value == "OFF") "ON"
         else "OFF"
+    }
+
+    private fun scheduleOrCancelNotifications(
+        notificationsChoice: String,
+        notificationService: MotivationalNotificationsService
+    ) {
+        saveNotificationsChoice(notificationsChoice = notificationsChoice)
+
+        // Schedule or cancel notifications based on the user's choice
+        if (notificationsChoice == "ON") {
+            notificationService.scheduleMotivationalNotifications()
+        } else {
+            notificationService.cancelMotivationalNotifications()
+        }
     }
 }

@@ -4,10 +4,12 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.SoftwareKeyboardController
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import healthWave.core.notifications.MotivationalNotificationsService
 import healthWave.data.local.database.entity.User
 
 sealed class SharedSignUpEvent {
-    data class ValidateSignUpSplashScreen(val navigator: DestinationsNavigator) : SharedSignUpEvent()
+    data class ValidateSignUpSplashScreen(val navigator: DestinationsNavigator) :
+        SharedSignUpEvent()
 
     data class ValidateSignUpFirstScreen @OptIn(ExperimentalComposeUiApi::class)
     constructor(
@@ -33,6 +35,22 @@ sealed class SharedSignUpEvent {
         val user: User
     ) : SharedSignUpEvent()
 
-    data class CalculateTheTDEE(val user: User): SharedSignUpEvent()
-    data class UpdateUserFirstAndLastName(val firstName: String, val lastName: String): SharedSignUpEvent()
+    data class CalculateTheTDEE(val user: User) : SharedSignUpEvent()
+
+    data class UpdateUserFirstAndLastName(
+        val firstName: String,
+        val lastName: String
+    ) : SharedSignUpEvent()
+
+    data class ApplyTheme(val value: String) : SharedSignUpEvent()
+
+    data class ScheduleOrCancelNotifications(
+        val notificationsChoice: String,
+        val notificationService: MotivationalNotificationsService
+    ) : SharedSignUpEvent()
+
+    data object GetGoalCalories : SharedSignUpEvent()
+    data object GetNewApplicationTheme : SharedSignUpEvent()
+    data object GetNewNotificationsChoice : SharedSignUpEvent()
+
 }

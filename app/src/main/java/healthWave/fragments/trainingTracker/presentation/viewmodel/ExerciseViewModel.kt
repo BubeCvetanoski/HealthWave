@@ -1,7 +1,6 @@
 package healthWave.fragments.trainingTracker.presentation.viewmodel
 
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.focus.FocusRequester
 import androidx.lifecycle.ViewModel
@@ -18,6 +17,8 @@ import healthWave.fragments.trainingTracker.presentation.screen.TableCellDataIte
 import healthWave.fragments.trainingTracker.presentation.state.ExerciseState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -29,8 +30,8 @@ class ExerciseViewModel @Inject constructor(
     private val exerciseUseCases: ExerciseUseCases
 ) : ViewModel() {
 
-    private val _exerciseState = mutableStateOf(ExerciseState())
-    val exerciseState: State<ExerciseState> = _exerciseState
+    private val _exerciseState = MutableStateFlow(ExerciseState())
+    val exerciseState get() = _exerciseState.asStateFlow()
 
     var tableCellData: List<List<MutableState<TableCellDataItem>>>? = null
 
@@ -48,21 +49,27 @@ class ExerciseViewModel @Inject constructor(
             is TrainingTrackerEvent.GetExerciseByDate -> getExercisesByDate(event.date)
             is TrainingTrackerEvent.UpdateCellData -> updateTableCellData(event.numberOfExercises)
             is TrainingTrackerEvent.UpdateExercises -> updateExercises(event.exercises)
-            is TrainingTrackerEvent.InitializeTableCellData -> initializeTableCellData(event.numberOfExercises, event.defaultItem)
-            is TrainingTrackerEvent.OnApplyClicked -> onApplyClicked(event.date)
-            is TrainingTrackerEvent.OnCustomTableTextChanged -> onCustomTableTextChanged(
+            is TrainingTrackerEvent.InitializeTableCellData -> initializeTableCellData(
+                event.numberOfExercises,
+                event.defaultItem
+            )
+
+            is TrainingTrackerEvent.ApplyClicked -> onApplyClicked(event.date)
+            is TrainingTrackerEvent.CustomTableTextChanged -> onCustomTableTextChanged(
                 event.cellState,
                 event.newText,
                 event.rowIndex,
                 event.columnIndex
             )
-            is TrainingTrackerEvent.OnCustomTableNextClicked -> onCustomTableNextClicked(
+
+            is TrainingTrackerEvent.CustomTableNextClicked -> onCustomTableNextClicked(
                 event.rowIndex,
                 event.columnIndex,
                 event.rows,
                 event.focusRequester,
                 event.focusRequesters
             )
+
             is TrainingTrackerEvent.ClearTableCellData -> clearTableCellData()
         }
     }
@@ -171,13 +178,11 @@ class ExerciseViewModel @Inject constructor(
 
             // Check if any of the values in the row are not blank
             if (name.isNotBlank() || sets.isNotBlank() || reps.isNotBlank() || load.isNotBlank()) {
-                val existingExerciseIndex =
-                    _exerciseState.value.exercises.indexOfFirst { it.number == number }
+                val existingExerciseIndex = _exerciseState.value.exercises.indexOfFirst { it.number == number }
 
                 if (existingExerciseIndex != -1) {
                     // Exercise with the same number exists, update it
-                    val existingExercise =
-                        _exerciseState.value.exercises[existingExerciseIndex]
+                    val existingExercise = _exerciseState.value.exercises[existingExerciseIndex]
                     val exerciseToUpdate = Exercise(
                         number = number,
                         name = name,
@@ -283,7 +288,7 @@ class ExerciseViewModel @Inject constructor(
         viewModelScope.launch {
             exerciseUseCases.addExercise(exercise)
             _exerciseState.value = exerciseState.value.copy(
-                exercises = exerciseState.value.exercises + exercise
+                exercises = _exerciseState.value.exercises + exercise
             )
         }
     }
@@ -298,7 +303,7 @@ class ExerciseViewModel @Inject constructor(
         )
     }
 
-    fun clearTableCellData() {
+    private fun clearTableCellData() {
         tableCellData!!.forEach { row ->
             row.forEach { cellState ->
                 cellState.value = cellState.value.copy(
@@ -319,14 +324,14 @@ class ExerciseViewModel @Inject constructor(
     ) {
         val updatedCellContent = cellState.value.copy(
             currentText = newText,
-            hasUnsavedChanges =
-            newText != cellState.value.currentText &&
+            hasUnsavedChanges = newText != cellState.value.currentText &&
                     newText != cellState.value.previousText &&
                     newText.isNotBlank()
 
         )
         tableCellData!![rowIndex][columnIndex].value = updatedCellContent
     }
+
     private fun updateRows(
         tableCellData: List<List<MutableState<TableCellDataItem>>>,
         exercises: List<Exercise>
@@ -415,7 +420,7 @@ class ExerciseViewModel @Inject constructor(
                 number = number,
                 date = date
             )
-            val updatedExerciseList = exerciseState.value.exercises.map { exercise ->
+            val updatedExerciseList = _exerciseState.value.exercises.map { exercise ->
                 if (exercise.number == number && exercise.date == date) {
                     updatedExercise
                 } else {

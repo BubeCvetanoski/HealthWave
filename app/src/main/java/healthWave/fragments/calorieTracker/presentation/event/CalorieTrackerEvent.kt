@@ -34,7 +34,7 @@ sealed class CalorieTrackerEvent {
         val mealType: MealType = MealType.fromString("")
     ) : CalorieTrackerEvent()
 
-    data class OnQueryChange(
+    data class QueryChange(
         val query: String
     ) : CalorieTrackerEvent()
 
@@ -75,6 +75,6 @@ sealed class CalorieTrackerEvent {
         val mealType: MealType
     ) : CalorieTrackerEvent()
 
-    data object OnSearch : CalorieTrackerEvent()
+    data object Search : CalorieTrackerEvent()
     data object EatingOccasionItemExpanded : CalorieTrackerEvent()
 }

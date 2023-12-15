@@ -26,6 +26,7 @@ import healthWave.destinations.MyProfileScreenDestination
 import healthWave.destinations.ProgramsScreenDestination
 import healthWave.destinations.SignUpSecondScreenDestination
 import healthWave.destinations.TrainingTrackerScreenDestination
+import healthWave.launcher.presentation.event.SharedSignUpEvent
 import healthWave.launcher.presentation.viewmodel.SharedUserViewModel
 import healthWave.ui.components.AnimatedBottomNavigationBar
 import healthWave.ui.components.CustomNavigationDrawer
@@ -33,37 +34,26 @@ import healthWave.ui.components.CustomTopAppBar
 import healthWave.ui.components.CustomYesNoDialog
 import healthWave.ui.components.SampleScaffold
 import healthWave.ui.theme.HealthWaveColorScheme
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun App(notificationService: MotivationalNotificationsService) {
+fun AppDestinations(
+    notificationService: MotivationalNotificationsService,
+    sharedUserViewModel: SharedUserViewModel = hiltViewModel()
+) {
     val engine = rememberNavHostEngine()
     val navController = engine.rememberNavController()
     val currentDestination = navController.appCurrentDestinationAsState().value
-
-    val sharedUserViewModel: SharedUserViewModel = hiltViewModel()
-    val user = sharedUserViewModel.userState.collectAsState()
     val scope = rememberCoroutineScope()
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
+    val user = sharedUserViewModel.userState.collectAsState().value
+    val theme = sharedUserViewModel.applicationTheme.value
     val shouldShowScaffoldBar = remember { mutableStateOf(false) }
     val shouldShowNotificationsDialog = remember { mutableStateOf(false) }
-    val shouldShowThemeDialog = remember { mutableStateOf(false) }
-
-    val newTheme = remember { mutableStateOf("") }
-    val newNotificationsChoice = remember { mutableStateOf("") }
-    newTheme.value = sharedUserViewModel.getNewApplicationTheme()
-    newNotificationsChoice.value = sharedUserViewModel.getNewNotificationsChoice()
-
-    //it must be initialized here because here is the first time where the colors are accessed
-    HealthWaveColorScheme.initialize(
-        user.value.gender,
-        sharedUserViewModel.themeState.value
-    )
-    val healthWaveColors = HealthWaveColorScheme.instance
+    val shouldShowAppearanceDialog = remember { mutableStateOf(false) }
 
     val fragmentDestinationIdentifier: FragmentsDestinationIdentifier =
         when (currentDestination) {
@@ -100,65 +90,12 @@ fun App(notificationService: MotivationalNotificationsService) {
             }
         }
 
-    val onMenuClicked = {
-        scope.launch {
-            drawerState.open()
-        }
-    }
-
-    val onMyProfileClicked = {
-        scope.launch {
-            navController.navigate(MyProfileScreenDestination(id = fragmentDestinationIdentifier.id))
-            drawerState.close()
-        }
-    }
-
-    val onSetUpANewGoalClicked = {
-        scope.launch {
-            val newUser = user.let {
-                User(
-                    firstName = it.value.firstName,
-                    lastName = it.value.lastName,
-                    gender = it.value.gender,
-                    id = it.value.id
-                )
-            }
-            navController.navigate(SignUpSecondScreenDestination(user = newUser))
-            drawerState.close()
-        }
-    }
-
-    val onAppearanceDialogConfirm = {
-        scope.launch {
-            sharedUserViewModel.saveTheme(themeValue = newTheme.value)
-        }
-    }
-
-    val onNotificationDialogConfirm = {
-        scope.launch {
-            sharedUserViewModel.saveNotificationsChoice(notificationsChoice = newNotificationsChoice.value)
-
-            if (newNotificationsChoice.value == "ON") {
-                notificationService.scheduleMotivationalNotifications()
-            } else {
-                notificationService.cancelMotivationalNotifications()
-            }
-        }
-    }
-
-    val onNotificationsClicked = {
-        scope.launch {
-            shouldShowNotificationsDialog.value = true
-            drawerState.close()
-        }
-    }
-
-    val onApplicationsThemeClicked = {
-        scope.launch {
-            shouldShowThemeDialog.value = true
-            drawerState.close()
-        }
-    }
+    //it must be initialized here because it is the first time where the colors are accessed
+    HealthWaveColorScheme.initialize(
+        gender = user.gender,
+        applicationTheme = theme
+    )
+    val healthWaveColors = HealthWaveColorScheme.instance
 
     if (shouldShowScaffoldBar.value) {
         CustomNavigationDrawer(
@@ -171,7 +108,11 @@ fun App(notificationService: MotivationalNotificationsService) {
                             title = fragmentDestinationIdentifier.title,
                             backgroundColor = HealthWaveColorScheme.backgroundColor,
                             barColor = HealthWaveColorScheme.baseElementsColor
-                        ) { onMenuClicked() }
+                        ) {
+                            scope.launch {
+                                drawerState.open()
+                            }
+                        }
                     },
                     bottomBar = {
                         AnimatedBottomNavigationBar(
@@ -195,25 +136,64 @@ fun App(notificationService: MotivationalNotificationsService) {
                     }
                 }
             },
-            onMyProfileClicked = onMyProfileClicked,
-            onSetUpANewGoalClicked = onSetUpANewGoalClicked,
-            onNotificationsClicked = onNotificationsClicked,
-            onApplicationsThemeClicked = onApplicationsThemeClicked
+            onMyProfileClicked = {
+                scope.launch {
+                    navController.navigate(MyProfileScreenDestination(id = fragmentDestinationIdentifier.id))
+                    drawerState.close()
+                }
+            },
+            onSetUpANewGoalClicked = {
+                scope.launch {
+                    val newUser = User(
+                        firstName = user.firstName,
+                        lastName = user.lastName,
+                        gender = user.gender,
+                        id = user.id
+                    )
+                    navController.navigate(SignUpSecondScreenDestination(user = newUser))
+                    drawerState.close()
+                }
+            },
+            onNotificationsClicked = {
+                scope.launch {
+                    shouldShowNotificationsDialog.value = true
+                    drawerState.close()
+                }
+            },
+            onApplicationsThemeClicked = {
+                scope.launch {
+                    shouldShowAppearanceDialog.value = true
+                    drawerState.close()
+                }
+            }
         )
         if (shouldShowNotificationsDialog.value) {
             ShowNotificationsDialog(
                 containerColor = HealthWaveColorScheme.baseElementsColor,
-                turnOnOrOff = newNotificationsChoice.value,
+                turnOnOrOff = sharedUserViewModel.onEvent(SharedSignUpEvent.GetNewNotificationsChoice) as String,
                 onDismiss = { shouldShowNotificationsDialog.value = false },
-                onConfirm = { onNotificationDialogConfirm() }
+                onConfirm = {
+                    sharedUserViewModel.onEvent(
+                        SharedSignUpEvent.ScheduleOrCancelNotifications(
+                            notificationsChoice = sharedUserViewModel.onEvent(SharedSignUpEvent.GetNewNotificationsChoice) as String,
+                            notificationService = notificationService
+                        )
+                    )
+                }
             )
         }
-        if (shouldShowThemeDialog.value) {
+        if (shouldShowAppearanceDialog.value) {
             ShowAppearanceDialog(
                 containerColor = HealthWaveColorScheme.baseElementsColor,
-                turnDarkOrLight = newTheme.value,
-                onDismiss = { shouldShowThemeDialog.value = false },
-                onConfirm = { onAppearanceDialogConfirm() }
+                turnDarkOrLight = sharedUserViewModel.onEvent(SharedSignUpEvent.GetNewApplicationTheme) as String,
+                onDismiss = { shouldShowAppearanceDialog.value = false },
+                onConfirm = {
+                    sharedUserViewModel.onEvent(
+                        SharedSignUpEvent.ApplyTheme(
+                            value = sharedUserViewModel.onEvent(SharedSignUpEvent.GetNewApplicationTheme) as String
+                        )
+                    )
+                }
             )
         }
     } else {
@@ -236,7 +216,7 @@ fun ShowNotificationsDialog(
     containerColor: Color,
     turnOnOrOff: String,
     onDismiss: () -> Unit,
-    onConfirm: () -> Job
+    onConfirm: () -> Unit
 ) {
     CustomYesNoDialog(
         title = stringResource(id = R.string.notifications),
@@ -255,7 +235,7 @@ fun ShowAppearanceDialog(
     containerColor: Color,
     turnDarkOrLight: String,
     onDismiss: () -> Unit,
-    onConfirm: () -> Job
+    onConfirm: () -> Unit
 ) {
     CustomYesNoDialog(
         title = stringResource(id = R.string.appearance),

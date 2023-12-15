@@ -14,15 +14,15 @@ sealed class TrainingTrackerEvent {
         val defaultItem: TableCellDataItem
     ) : TrainingTrackerEvent()
 
-    data class OnApplyClicked(val date: String) : TrainingTrackerEvent()
-    data class OnCustomTableTextChanged(
+    data class ApplyClicked(val date: String) : TrainingTrackerEvent()
+    data class CustomTableTextChanged(
         val cellState: MutableState<TableCellDataItem>,
         val newText: String,
         val rowIndex: Int,
         val columnIndex: Int
     ) : TrainingTrackerEvent()
 
-    data class OnCustomTableNextClicked(
+    data class CustomTableNextClicked(
         val rowIndex: Int,
         val columnIndex: Int,
         val rows: Int,

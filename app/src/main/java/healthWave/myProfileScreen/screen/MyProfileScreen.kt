@@ -1,4 +1,4 @@
-package healthWave.myProfileScreen
+package healthWave.myProfileScreen.screen
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
@@ -47,6 +47,8 @@ import healthWave.core.util.HelperFunctions.Companion.initializeInformativeTextI
 import healthWave.data.local.database.entity.User
 import healthWave.launcher.presentation.event.SharedSignUpEvent
 import healthWave.launcher.presentation.viewmodel.SharedUserViewModel
+import healthWave.myProfileScreen.event.MyProfileEvent
+import healthWave.myProfileScreen.viewmodel.MyProfileViewModel
 import healthWave.ui.components.InformativeTextComposable
 import healthWave.ui.components.UpdateNameDialog
 import healthWave.ui.theme.HealthWaveColorScheme
@@ -63,30 +65,30 @@ fun MyProfileScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val user = sharedUserViewModel.userState.collectAsState()
+    val user = sharedUserViewModel.userState.collectAsState().value
 
     val informationItems = context.initializeInformativeTextItem(
-        user = user.value
+        user = user
     )
 
-    val myProfilePic: ImageVector = when (user.value.gender) {
+    val myProfilePic: ImageVector = when (user.gender) {
         stringResource(id = R.string.male) -> Icons.Filled.Man
         stringResource(id = R.string.female) -> Icons.Filled.Girl
         else -> Icons.Filled.Man
     }
 
     val onSaveClicked: (String, String) -> Unit = { firstName, lastName ->
-        if (myProfileViewModel.onEvent(MyProfileEvent.OnValidate(firstName, lastName)) as Boolean) {
+        if (myProfileViewModel.onEvent(MyProfileEvent.ValidateFirstAndLastName(firstName, lastName)) as Boolean) {
             scope.launch {
                 sharedUserViewModel.onEvent(
                     SharedSignUpEvent.UpdateUserFirstAndLastName(firstName, lastName)
                 )
             }
-            myProfileViewModel.onEvent(MyProfileEvent.OnDismissEditNameDialog)
+            myProfileViewModel.onEvent(MyProfileEvent.DismissEditNameDialog)
         }
     }
 
-    BackHandler { myProfileViewModel.onEvent(MyProfileEvent.OnBack(id, navigator)) }
+    BackHandler { myProfileViewModel.onEvent(MyProfileEvent.BackClicked(id, navigator)) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -138,7 +140,7 @@ fun MyProfileScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = user.value.firstName + " " + user.value.lastName,
+                text = user.firstName + " " + user.lastName,
                 fontSize = 18.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(vertical = 10.dp)
@@ -148,13 +150,13 @@ fun MyProfileScreen(
                 imageVector = Icons.Outlined.Edit,
                 contentDescription = stringResource(id = R.string.edit_name),
                 tint = HealthWaveColorScheme.detailsElementsColor,
-                modifier = Modifier.clickable { myProfileViewModel.onEvent(MyProfileEvent.OnEditNameIconClicked) }
+                modifier = Modifier.clickable { myProfileViewModel.onEvent(MyProfileEvent.EditNameIconClicked) }
             )
             if (myProfileViewModel.showUpdateNameDialog.value) {
                 ShowUpdateNameDialog(
-                    user = user.value,
+                    user = user,
                     onSaveClicked = onSaveClicked,
-                    onDismiss = { myProfileViewModel.onEvent(MyProfileEvent.OnDismissEditNameDialog) }
+                    onDismiss = { myProfileViewModel.onEvent(MyProfileEvent.DismissEditNameDialog) }
                 )
             }
         }
@@ -176,7 +178,7 @@ fun MyProfileScreen(
                     containerColor = HealthWaveColorScheme.baseElementsColor,
                     contentColor = black_color
                 ),
-                onClick = { myProfileViewModel.onEvent(MyProfileEvent.OnBack(id, navigator)) }
+                onClick = { myProfileViewModel.onEvent(MyProfileEvent.BackClicked(id, navigator)) }
             ) {
                 Text(
                     text = stringResource(id = R.string.back),

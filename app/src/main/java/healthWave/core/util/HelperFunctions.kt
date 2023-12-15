@@ -21,7 +21,7 @@ import com.ramcosta.composedestinations.spec.Direction
 import healthWave.data.local.database.entity.User
 import healthWave.fragments.calorieTracker.presentation.screen.EatingOccasionItem
 import healthWave.fragments.calorieTracker.presentation.state.OverviewState
-import healthWave.fragments.programs.presentation.ProgramsListItem
+import healthWave.fragments.programs.presentation.screen.ProgramsListItem
 import healthWave.ui.components.InformativeTextItem
 import healthWave.ui.components.TableCellHeaderItem
 import healthWave.ui.theme.HealthWaveColorScheme

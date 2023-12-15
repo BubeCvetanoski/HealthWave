@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import healthWave.fragments.programs.presentation.ProgramsListItem
+import healthWave.fragments.programs.presentation.screen.ProgramsListItem
 import healthWave.ui.theme.HealthWaveColorScheme
 
 @Composable

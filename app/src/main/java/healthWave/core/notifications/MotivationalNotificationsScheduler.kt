@@ -17,7 +17,7 @@ class MotivationalNotificationsScheduler(private val context: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        // Set the alarm to trigger every three hours
+        // Set the alarm to trigger every five hours
         val intervalMillis = 5 * 60 * 60 * 1000
         val triggerAtMillis = System.currentTimeMillis()
 
