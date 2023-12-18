@@ -5,7 +5,7 @@ import healthWave.fragments.calorieTracker.domain.model.Food
 import healthWave.fragments.calorieTracker.domain.model.FoodNutrimentsInfo
 import kotlinx.coroutines.flow.Flow
 
-interface FoodRepository {
+interface CalorieTrackerRepository {
     suspend fun searchFood(
         query: String,
         page: Int,

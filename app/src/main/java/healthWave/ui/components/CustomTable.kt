@@ -40,7 +40,7 @@ import healthWave.core.util.HelperFunctions.Companion.CollectUiEvents
 import healthWave.core.util.HelperFunctions.Companion.initializeTableCellHeaderItems
 import healthWave.fragments.trainingTracker.presentation.event.TrainingTrackerEvent
 import healthWave.fragments.trainingTracker.presentation.screen.TableCellDataItem
-import healthWave.fragments.trainingTracker.presentation.viewmodel.ExerciseViewModel
+import healthWave.fragments.trainingTracker.presentation.viewmodel.TrainingTrackerViewModel
 import healthWave.ui.theme.HealthWaveColorScheme
 import healthWave.ui.theme.black_color
 import healthWave.ui.theme.transparent_color
@@ -51,7 +51,7 @@ fun CustomTable(
     date: String,
     rows: Int,
     tableCellData: List<List<MutableState<TableCellDataItem>>>,
-    exerciseViewModel: ExerciseViewModel
+    trainingTrackerViewModel: TrainingTrackerViewModel
 ) {
     val context = LocalContext.current
     val tableCellHeaderItems = context.initializeTableCellHeaderItems()
@@ -61,8 +61,8 @@ fun CustomTable(
     val restColumnWeight = .15f
 
     CollectUiEvents(
-        uiEvent = exerciseViewModel.uiEvent,
-        viewModel = exerciseViewModel,
+        uiEvent = trainingTrackerViewModel.uiEvent,
+        viewModel = trainingTrackerViewModel,
         context = context
     )
 
@@ -75,7 +75,7 @@ fun CustomTable(
         ) {
             // Here is the header of the table
             item {
-                Row(Modifier.background(HealthWaveColorScheme.itemsColor)) {
+                Row(Modifier.background(HealthWaveColorScheme.baseElementsColor)) {
                     tableCellHeaderItems.forEach { headerItem ->
                         TableCell(
                             text = headerItem.text,
@@ -104,8 +104,8 @@ fun CustomTable(
                             focusRequester = focusRequester,
                             keyboardType = if (columnIndex == 0) KeyboardType.Text else KeyboardType.Number,
                             onNext = {
-                                exerciseViewModel.onEvent(
-                                    TrainingTrackerEvent.CustomTableNextClicked(
+                                trainingTrackerViewModel.onEvent(
+                                    TrainingTrackerEvent.OnCustomTableNextClicked(
                                         rowIndex,
                                         columnIndex,
                                         rows,
@@ -115,8 +115,8 @@ fun CustomTable(
                                 )
                             },
                             onTextChanged = { newText ->
-                                exerciseViewModel.onEvent(
-                                    TrainingTrackerEvent.CustomTableTextChanged(
+                                trainingTrackerViewModel.onEvent(
+                                    TrainingTrackerEvent.OnCustomTableTextChanged(
                                         cellState,
                                         newText,
                                         rowIndex,
@@ -136,7 +136,7 @@ fun CustomTable(
                 containerColor = black_color,
                 elevation = FloatingActionButtonDefaults.elevation(4.dp),
                 onClick = {
-                    exerciseViewModel.onEvent(
+                    trainingTrackerViewModel.onEvent(
                         TrainingTrackerEvent.ClearTableCellData
                     )
                 },
@@ -152,8 +152,8 @@ fun CustomTable(
                 containerColor = white_color,
                 elevation = FloatingActionButtonDefaults.elevation(4.dp),
                 onClick = {
-                    exerciseViewModel.onEvent(
-                        TrainingTrackerEvent.ApplyClicked(date)
+                    trainingTrackerViewModel.onEvent(
+                        TrainingTrackerEvent.OnApplyClicked(date)
                     )
                 }
             ) {

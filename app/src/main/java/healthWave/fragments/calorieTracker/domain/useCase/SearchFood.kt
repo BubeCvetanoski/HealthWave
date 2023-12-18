@@ -1,10 +1,10 @@
 package healthWave.fragments.calorieTracker.domain.useCase
 
 import healthWave.fragments.calorieTracker.domain.model.FoodNutrimentsInfo
-import healthWave.fragments.calorieTracker.domain.repository.FoodRepository
+import healthWave.fragments.calorieTracker.domain.repository.CalorieTrackerRepository
 
 class SearchFood(
-    private val repository: FoodRepository
+    private val repository: CalorieTrackerRepository
 ) {
 
     suspend operator fun invoke(

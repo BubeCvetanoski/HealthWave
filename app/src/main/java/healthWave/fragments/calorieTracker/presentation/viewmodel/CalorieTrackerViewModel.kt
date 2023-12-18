@@ -16,7 +16,7 @@ import healthWave.fragments.calorieTracker.domain.model.CalorieAndNutrientSummar
 import healthWave.fragments.calorieTracker.domain.model.Food
 import healthWave.fragments.calorieTracker.domain.model.FoodNutrimentsInfo
 import healthWave.fragments.calorieTracker.domain.model.MealType
-import healthWave.fragments.calorieTracker.domain.useCase.FoodUseCases
+import healthWave.fragments.calorieTracker.domain.useCase.CalorieTrackerUseCases
 import healthWave.fragments.calorieTracker.presentation.event.CalorieTrackerEvent
 import healthWave.fragments.calorieTracker.presentation.state.FoodNutrimentsInfoState
 import healthWave.fragments.calorieTracker.presentation.state.FoodState
@@ -35,8 +35,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class FoodViewModel @Inject constructor(
-    private val foodUseCases: FoodUseCases
+class CalorieTrackerViewModel @Inject constructor(
+    private val calorieTrackerUseCases: CalorieTrackerUseCases
 ) : ViewModel() {
 
     private val _foodState = MutableStateFlow(FoodState())
@@ -84,7 +84,7 @@ class FoodViewModel @Inject constructor(
                 water = event.water
             )
 
-            is CalorieTrackerEvent.FoodItemHeaderExpanded -> foodItemHeaderExpanded(
+            is CalorieTrackerEvent.ExpandFoodItemHeader -> foodItemHeaderExpanded(
                 food = event.food
             )
 
@@ -112,7 +112,7 @@ class FoodViewModel @Inject constructor(
                 water = event.water
             )
 
-            is CalorieTrackerEvent.QueryChange -> onQueryChange(
+            is CalorieTrackerEvent.OnQueryChange -> onQueryChange(
                 query = event.query
             )
 
@@ -124,13 +124,13 @@ class FoodViewModel @Inject constructor(
                 flag = event.flag
             )
 
-            is CalorieTrackerEvent.ViewMyMeals -> viewMyMeals(
+            is CalorieTrackerEvent.OnViewMyMealsClicked -> viewMyMeals(
                 date = event.date,
                 mealType = event.mealType
             )
 
-            CalorieTrackerEvent.Search -> onSearch()
-            CalorieTrackerEvent.EatingOccasionItemExpanded -> eatingOccasionItemExpanded()
+            CalorieTrackerEvent.OnSearch -> onSearch()
+            CalorieTrackerEvent.ExpandEatingOccasionItem -> eatingOccasionItemExpanded()
         }
     }
 
@@ -139,8 +139,8 @@ class FoodViewModel @Inject constructor(
     ) {
         _overviewState.value = overviewState.value.copy(isLoading = true)
 
-        val foodFlow = foodUseCases.getFoodByDate(date)
-        val waterFlow = foodUseCases.getWaterByDate(date)
+        val foodFlow = calorieTrackerUseCases.getFoodByDate(date)
+        val waterFlow = calorieTrackerUseCases.getWaterByDate(date)
 
         foodFlow.combine(waterFlow) { foods, waters ->
             val summary = calculateCaloriesAndNutrients(foods)
@@ -200,7 +200,7 @@ class FoodViewModel @Inject constructor(
             waterIntakeInfo = emptyList()
         )
 
-        getWaterByDateJob = foodUseCases
+        getWaterByDateJob = calorieTrackerUseCases
             .getWaterByDate(date)
             .onEach { waters ->
                 _foodState.value = foodState.value.copy(
@@ -220,7 +220,7 @@ class FoodViewModel @Inject constructor(
         water: WaterState
     ) {
         viewModelScope.launch {
-            water.id?.let { foodUseCases.deleteWaterById(it) }
+            water.id?.let { calorieTrackerUseCases.deleteWaterById(it) }
 
             val updatedWaterIntakeInfo = _foodState.value.waterIntakeInfo.filter {
                 it.id != water.id
@@ -241,7 +241,7 @@ class FoodViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
 
-            foodUseCases.insertWater(
+            calorieTrackerUseCases.insertWater(
                 water = Water(
                     milliliters = water.milliliters.takeIf { it.isNotEmpty() } ?: return@launch,
                     date = date
@@ -266,7 +266,7 @@ class FoodViewModel @Inject constructor(
             foodNutrimentsInfo = emptyList()
         )
 
-        getFoodByDateJob = foodUseCases
+        getFoodByDateJob = calorieTrackerUseCases
             .getFoodByDate(date)
             .onEach { foods ->
                 val filteredFoods =
@@ -379,7 +379,7 @@ class FoodViewModel @Inject constructor(
         food: FoodNutrimentsInfo
     ) {
         viewModelScope.launch {
-            food.id?.let { foodUseCases.deleteFoodById(it) }
+            food.id?.let { calorieTrackerUseCases.deleteFoodById(it) }
 
             val updatedFoodNutrimentsInfo = _foodState.value.foodNutrimentsInfo.filter {
                 it.food.id != food.id
@@ -403,7 +403,7 @@ class FoodViewModel @Inject constructor(
         viewModelScope.launch {
             val uiState = _foodState.value.foodNutrimentsInfo.find { it.food == food }
 
-            foodUseCases.insertFood(
+            calorieTrackerUseCases.insertFood(
                 food = uiState?.food ?: return@launch,
                 amount = uiState.amount.toIntOrNull() ?: return@launch,
                 mealType = mealType,
@@ -426,7 +426,7 @@ class FoodViewModel @Inject constructor(
                 viewMyMeals = false,
                 foodNutrimentsInfo = emptyList()
             )
-            foodUseCases
+            calorieTrackerUseCases
                 .searchFood(_foodState.value.query)
                 .onSuccess { foods ->
                     if (foods.isEmpty()) {
@@ -447,7 +447,7 @@ class FoodViewModel @Inject constructor(
                 .onFailure {
                     shouldEmitValue = true
                     getFoodByNameJob?.cancel()
-                    getFoodByNameJob = foodUseCases
+                    getFoodByNameJob = calorieTrackerUseCases
                         .getFoodByName(_foodState.value.query)
                         .onEach { foods ->
                             if (shouldEmitValue) {

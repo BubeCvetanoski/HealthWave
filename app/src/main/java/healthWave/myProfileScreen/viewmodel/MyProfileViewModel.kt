@@ -24,9 +24,9 @@ class MyProfileViewModel @Inject constructor() : ViewModel() {
 
     fun onEvent(event: MyProfileEvent): Any {
         return when(event) {
-            is MyProfileEvent.BackClicked -> onBack(event.id, event.navigator)
+            is MyProfileEvent.OnBackClicked -> onBack(event.id, event.navigator)
             is MyProfileEvent.DismissEditNameDialog -> onDismissEditNameDialog()
-            is MyProfileEvent.EditNameIconClicked -> onEditNameIconClicked()
+            is MyProfileEvent.OnEditNameIconClicked -> onEditNameIconClicked()
             is MyProfileEvent.ValidateFirstAndLastName -> onValidate(event.firstName, event.lastName)
         }
     }

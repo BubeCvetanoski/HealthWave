@@ -1,6 +1,6 @@
 package healthWave.fragments.calorieTracker.domain.useCase
 
-data class FoodUseCases(
+data class CalorieTrackerUseCases(
     val searchFood: SearchFood,
     val insertFood: InsertFood,
     val getFoodByDate: GetFoodByDate,

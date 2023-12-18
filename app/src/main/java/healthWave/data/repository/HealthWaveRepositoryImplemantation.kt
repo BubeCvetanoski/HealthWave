@@ -10,8 +10,8 @@ import healthWave.data.mapper.toFoodNutrimentsInfo
 import healthWave.data.remote.HealthWaveApi
 import healthWave.fragments.calorieTracker.domain.model.Food
 import healthWave.fragments.calorieTracker.domain.model.FoodNutrimentsInfo
-import healthWave.fragments.calorieTracker.domain.repository.FoodRepository
-import healthWave.fragments.trainingTracker.domain.repository.ExerciseRepository
+import healthWave.fragments.calorieTracker.domain.repository.CalorieTrackerRepository
+import healthWave.fragments.trainingTracker.domain.repository.TrainingTrackerRepository
 import healthWave.launcher.domain.repository.UserRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -22,7 +22,7 @@ import javax.inject.Singleton
 class HealthWaveRepositoryImplemantation @Inject constructor(
     private val dao: HealthWaveDao,
     private val api: HealthWaveApi
-) : UserRepository, ExerciseRepository, FoodRepository {
+) : UserRepository, TrainingTrackerRepository, CalorieTrackerRepository {
 
     //Functions for User table
 
@@ -72,6 +72,21 @@ class HealthWaveRepositoryImplemantation @Inject constructor(
 
     override suspend fun deleteAllExercisesByDate(date: String) {
         return dao.deleteAllExercisesByDate(date)
+    }
+
+    override suspend fun getExerciseIdsByNumberAndDate(
+        numbersOfExercises: List<String>,
+        date: String
+    ): List<Int> {
+        return dao.getExerciseIdsByNumberAndDate(numbersOfExercises, date)
+    }
+
+    override suspend fun deleteExercisesByIdAndDate(idsToBeDeleted: List<Int>, date: String) {
+        return dao.deleteExercisesByIdAndDate(idsToBeDeleted, date)
+    }
+
+    override suspend fun updateExerciseNumberByIdAndDate(number: String, id: Int, date:String) {
+        return dao.updateExerciseNumberByIdAndDate(number, id, date)
     }
 
     //Functions for Food table

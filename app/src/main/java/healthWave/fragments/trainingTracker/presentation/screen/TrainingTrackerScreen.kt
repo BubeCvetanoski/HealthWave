@@ -43,7 +43,7 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import healthWave.core.util.HelperFunctions
 import healthWave.core.util.HelperFunctions.Companion.initializeOutlinedTextFieldColors
 import healthWave.fragments.trainingTracker.presentation.event.TrainingTrackerEvent
-import healthWave.fragments.trainingTracker.presentation.viewmodel.ExerciseViewModel
+import healthWave.fragments.trainingTracker.presentation.viewmodel.TrainingTrackerViewModel
 import healthWave.ui.components.CustomTable
 import healthWave.ui.components.LargeDropdownSpinner
 import healthWave.ui.theme.HealthWaveColorScheme
@@ -54,10 +54,10 @@ import java.time.format.DateTimeFormatter
 @Destination
 @Composable
 fun TrainingTrackerScreen(
-    exerciseViewModel: ExerciseViewModel = hiltViewModel()
+    trainingTrackerViewModel: TrainingTrackerViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val state = exerciseViewModel.exerciseState.collectAsState().value
+    val state = trainingTrackerViewModel.exerciseState.collectAsState().value
     val stateSize = state.exercises.size
 
     val dateDialogState = rememberMaterialDialogState()
@@ -88,7 +88,7 @@ fun TrainingTrackerScreen(
         selectedIndexExercises = index
         numberOfExercises = item.substringBefore(" Exercise").toInt()
 
-        if (numberOfExercises != exerciseViewModel.tableCellData!!.size) {
+        if (numberOfExercises != trainingTrackerViewModel.tableCellData!!.size) {
 
             if (numberOfExercises < stateSize) {
 
@@ -97,7 +97,7 @@ fun TrainingTrackerScreen(
             }
 
             // Check if the number of exercises has changed -> update the table
-            exerciseViewModel.onEvent(
+            trainingTrackerViewModel.onEvent(
                 TrainingTrackerEvent.UpdateCellData(numberOfExercises)
             )
         }
@@ -107,7 +107,7 @@ fun TrainingTrackerScreen(
         pickedDate = newDate
         pickADateText = formattedDate
 
-        exerciseViewModel.onEvent(
+        trainingTrackerViewModel.onEvent(
             TrainingTrackerEvent.GetExerciseByDate(formattedDate)
         )
     }
@@ -119,7 +119,7 @@ fun TrainingTrackerScreen(
             selectedIndexExercises = stateSize - 1
 
             // Check if the number of exercises has changed -> update the table
-            exerciseViewModel.onEvent(
+            trainingTrackerViewModel.onEvent(
                 TrainingTrackerEvent.UpdateCellData(numberOfExercises)
             )
         }
@@ -137,12 +137,12 @@ fun TrainingTrackerScreen(
                 selectedIndexExercises = numberOfExercises - 1
             }
 
-            exerciseViewModel.onEvent(
+            trainingTrackerViewModel.onEvent(
                 TrainingTrackerEvent.UpdateCellData(numberOfExercises)
             )
 
         } else {
-            exerciseViewModel.onEvent(
+            trainingTrackerViewModel.onEvent(
                 TrainingTrackerEvent.InitializeTableCellData(
                     numberOfExercises,
                     TableCellDataItem("", "")
@@ -238,14 +238,12 @@ fun TrainingTrackerScreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 if (numberOfExercises > 0) {
-                    exerciseViewModel.tableCellData?.let { tableCellData ->
-                        CustomTable(
-                            date = formattedDate,
-                            rows = numberOfExercises,
-                            tableCellData = tableCellData,
-                            exerciseViewModel = exerciseViewModel
-                        )
-                    }
+                    CustomTable(
+                        date = formattedDate,
+                        rows = numberOfExercises,
+                        tableCellData = trainingTrackerViewModel.tableCellData!!,
+                        trainingTrackerViewModel = trainingTrackerViewModel
+                    )
                 }
             }
         }

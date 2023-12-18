@@ -66,6 +66,7 @@ fun MyProfileScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val user = sharedUserViewModel.userState.collectAsState().value
+    val showUpdateNameDialog = myProfileViewModel.showUpdateNameDialog.value
 
     val informationItems = context.initializeInformativeTextItem(
         user = user
@@ -88,7 +89,7 @@ fun MyProfileScreen(
         }
     }
 
-    BackHandler { myProfileViewModel.onEvent(MyProfileEvent.BackClicked(id, navigator)) }
+    BackHandler { myProfileViewModel.onEvent(MyProfileEvent.OnBackClicked(id, navigator)) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -150,9 +151,9 @@ fun MyProfileScreen(
                 imageVector = Icons.Outlined.Edit,
                 contentDescription = stringResource(id = R.string.edit_name),
                 tint = HealthWaveColorScheme.detailsElementsColor,
-                modifier = Modifier.clickable { myProfileViewModel.onEvent(MyProfileEvent.EditNameIconClicked) }
+                modifier = Modifier.clickable { myProfileViewModel.onEvent(MyProfileEvent.OnEditNameIconClicked) }
             )
-            if (myProfileViewModel.showUpdateNameDialog.value) {
+            if (showUpdateNameDialog) {
                 ShowUpdateNameDialog(
                     user = user,
                     onSaveClicked = onSaveClicked,
@@ -178,7 +179,7 @@ fun MyProfileScreen(
                     containerColor = HealthWaveColorScheme.baseElementsColor,
                     contentColor = black_color
                 ),
-                onClick = { myProfileViewModel.onEvent(MyProfileEvent.BackClicked(id, navigator)) }
+                onClick = { myProfileViewModel.onEvent(MyProfileEvent.OnBackClicked(id, navigator)) }
             ) {
                 Text(
                     text = stringResource(id = R.string.back),

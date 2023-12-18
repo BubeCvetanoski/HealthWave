@@ -1,12 +1,12 @@
 package healthWave.fragments.calorieTracker.domain.model
 
 sealed class MealType(val name: String) {
-    object AllMeals: MealType("All meals")
-    object Breakfast: MealType("Breakfast")
-    object Lunch: MealType("Lunch")
-    object Dinner: MealType("Dinner")
-    object Snack: MealType("Snack")
-    object Water: MealType("Water")
+    data object AllMeals: MealType("All meals")
+    data object Breakfast: MealType("Breakfast")
+    data object Lunch: MealType("Lunch")
+    data object Dinner: MealType("Dinner")
+    data object Snack: MealType("Snack")
+    data object Water: MealType("Water")
 
     companion object {
         fun fromString(name: String): MealType {

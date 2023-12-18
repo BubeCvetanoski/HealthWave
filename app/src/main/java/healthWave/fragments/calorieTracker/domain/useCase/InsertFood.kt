@@ -3,11 +3,11 @@ package healthWave.fragments.calorieTracker.domain.useCase
 import healthWave.fragments.calorieTracker.domain.model.Food
 import healthWave.fragments.calorieTracker.domain.model.FoodNutrimentsInfo
 import healthWave.fragments.calorieTracker.domain.model.MealType
-import healthWave.fragments.calorieTracker.domain.repository.FoodRepository
+import healthWave.fragments.calorieTracker.domain.repository.CalorieTrackerRepository
 import kotlin.math.roundToInt
 
 class InsertFood(
-    val repository: FoodRepository
+    val repository: CalorieTrackerRepository
 ) {
     suspend operator fun invoke(
         food: FoodNutrimentsInfo,

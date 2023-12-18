@@ -1,9 +1,9 @@
 package healthWave.fragments.trainingTracker.domain.useCase
 
-import healthWave.fragments.trainingTracker.domain.repository.ExerciseRepository
+import healthWave.fragments.trainingTracker.domain.repository.TrainingTrackerRepository
 
 class UpdateExerciseByNumberAndDate(
-    val repository: ExerciseRepository
+    val repository: TrainingTrackerRepository
 ) {
     suspend operator fun invoke(
         name: String,

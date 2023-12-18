@@ -31,9 +31,9 @@ class ProgramsViewModel @Inject constructor() : ViewModel() {
 
     fun onEvent(event: ProgramsEvent) {
         when (event) {
-            is ProgramsEvent.ProgramsItemSelected -> onProgramsItemSelected(event.index, event.item)
-            is ProgramsEvent.ProgramsListHeaderClicked -> onProgramsListHeaderClicked(event.item)
-            is ProgramsEvent.ProgramsListItemCardClicked -> onProgramsListItemCardClicked()
+            is ProgramsEvent.OnProgramsItemSelected -> onProgramsItemSelected(event.index, event.item)
+            is ProgramsEvent.OnProgramsListHeaderClicked -> onProgramsListHeaderClicked(event.item)
+            is ProgramsEvent.OnProgramsListItemCardClicked -> onProgramsListItemCardClicked()
         }
     }
 

@@ -54,7 +54,7 @@ fun ProgramsScreen(
                 selectedIndex = state.selectedIndexDays,
                 onItemSelected = { index, item ->
                     programsViewModel.onEvent(
-                        ProgramsEvent.ProgramsItemSelected(index, item)
+                        ProgramsEvent.OnProgramsItemSelected(index, item)
                     )
                 }
             )
@@ -66,7 +66,7 @@ fun ProgramsScreen(
                         program = item,
                         onClick = {
                             programsViewModel.onEvent(
-                                ProgramsEvent.ProgramsListHeaderClicked(item)
+                                ProgramsEvent.OnProgramsListHeaderClicked(item)
                             )
                         }
                     )
@@ -78,7 +78,7 @@ fun ProgramsScreen(
                 program = state.program,
                 onClick = {
                     programsViewModel.onEvent(
-                        ProgramsEvent.ProgramsListItemCardClicked
+                        ProgramsEvent.OnProgramsListItemCardClicked
                     )
                 }
             )

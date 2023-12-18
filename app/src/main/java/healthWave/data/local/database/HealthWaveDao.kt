@@ -80,6 +80,31 @@ interface HealthWaveDao {
     )
     suspend fun deleteAllExercisesByDate(date: String)
 
+    @Query(
+        """
+            SELECT id FROM exercise
+            WHERE number IN (:numbers) and date = :date
+        """
+    )
+    suspend fun getExerciseIdsByNumberAndDate(numbers: List<String>, date: String): List<Int>
+
+    @Query(
+        """
+            DELETE FROM exercise
+            WHERE id IN (:ids) and date = :date
+        """
+    )
+    suspend fun deleteExercisesByIdAndDate(ids: List<Int>, date: String)
+
+    @Query(
+        """
+            UPDATE exercise
+            SET number = :number
+            WHERE id = :id AND date = :date
+        """
+    )
+    suspend fun updateExerciseNumberByIdAndDate(number: String, id: Int, date:String)
+
     //Queries for Food table
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

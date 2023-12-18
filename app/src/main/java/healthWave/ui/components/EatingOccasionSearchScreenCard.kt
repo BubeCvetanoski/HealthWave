@@ -41,7 +41,7 @@ import healthWave.core.util.HelperFunctions.Companion.CollectUiEvents
 import healthWave.fragments.calorieTracker.domain.model.MealType
 import healthWave.fragments.calorieTracker.presentation.event.CalorieTrackerEvent
 import healthWave.fragments.calorieTracker.presentation.state.FoodState
-import healthWave.fragments.calorieTracker.presentation.viewmodel.FoodViewModel
+import healthWave.fragments.calorieTracker.presentation.viewmodel.CalorieTrackerViewModel
 import healthWave.ui.theme.HealthWaveColorScheme
 import healthWave.ui.theme.transparent_color
 
@@ -51,7 +51,7 @@ fun EatingOccasionSearchScreenCard(
     title: String,
     outlinedTextFieldColors: TextFieldColors,
     date: String,
-    foodViewModel: FoodViewModel,
+    calorieTrackerViewModel: CalorieTrackerViewModel,
     foodState: FoodState,
     onBackHandlerClick: () -> Unit
 ) {
@@ -67,16 +67,16 @@ fun EatingOccasionSearchScreenCard(
     }
 
     CollectUiEvents(
-        uiEvent = foodViewModel.uiEvent,
-        viewModel = foodViewModel,
+        uiEvent = calorieTrackerViewModel.uiEvent,
+        viewModel = calorieTrackerViewModel,
         context = context
     )
 
     if (!isWaterState) {
         LaunchedEffect(Unit) {
             if (title == context.getString(R.string.all_meals)) {
-                foodViewModel.onEvent(
-                    CalorieTrackerEvent.ViewMyMeals(
+                calorieTrackerViewModel.onEvent(
+                    CalorieTrackerEvent.OnViewMyMealsClicked(
                         date,
                         MealType.fromString(name = title)
                     )
@@ -87,7 +87,7 @@ fun EatingOccasionSearchScreenCard(
 
     if (isWaterState) {
         LaunchedEffect(Unit) {
-            foodViewModel.onEvent(CalorieTrackerEvent.GetWaterByDate(date))
+            calorieTrackerViewModel.onEvent(CalorieTrackerEvent.GetWaterByDate(date))
         }
     }
 
@@ -129,8 +129,8 @@ fun EatingOccasionSearchScreenCard(
                         modifier = Modifier
                             .wrapContentWidth(align = Alignment.CenterHorizontally)
                             .clickable {
-                                foodViewModel.onEvent(
-                                    CalorieTrackerEvent.ViewMyMeals(
+                                calorieTrackerViewModel.onEvent(
+                                    CalorieTrackerEvent.OnViewMyMealsClicked(
                                         date,
                                         MealType.fromString(name = title)
                                     )
@@ -144,11 +144,11 @@ fun EatingOccasionSearchScreenCard(
                 colors = outlinedTextFieldColors,
                 text = foodState.query,
                 onValueChange = { newQuery ->
-                    foodViewModel.onEvent(CalorieTrackerEvent.QueryChange(newQuery))
+                    calorieTrackerViewModel.onEvent(CalorieTrackerEvent.OnQueryChange(newQuery))
                 },
                 onSearch = {
                     keyboardController?.hide()
-                    foodViewModel.onEvent(CalorieTrackerEvent.Search)
+                    calorieTrackerViewModel.onEvent(CalorieTrackerEvent.OnSearch)
                 }
             )
             Spacer(modifier = Modifier.height(10.dp))
@@ -162,7 +162,7 @@ fun EatingOccasionSearchScreenCard(
                                 expandedFromWhichState = stringResource(id = R.string.added),
                                 foodNutrimentsInfoState = it,
                                 onDeleteFood = {
-                                    foodViewModel.onEvent(
+                                    calorieTrackerViewModel.onEvent(
                                         CalorieTrackerEvent.DeleteFood(
                                             date,
                                             it.food
@@ -170,8 +170,8 @@ fun EatingOccasionSearchScreenCard(
                                     )
                                 },
                                 onFoodItemHeaderExpanded = {
-                                    foodViewModel.onEvent(
-                                        CalorieTrackerEvent.FoodItemHeaderExpanded(it.food)
+                                    calorieTrackerViewModel.onEvent(
+                                        CalorieTrackerEvent.ExpandFoodItemHeader(it.food)
                                     )
                                 }
                             )
@@ -182,7 +182,7 @@ fun EatingOccasionSearchScreenCard(
                                 foodNutrimentsInfoState = it,
                                 onChangeFoodAmount = { newAmount ->
                                     if (newAmount.length <= 5) {
-                                        foodViewModel.onEvent(
+                                        calorieTrackerViewModel.onEvent(
                                             CalorieTrackerEvent.ChangeFoodAmount(
                                                 it.food,
                                                 newAmount
@@ -192,7 +192,7 @@ fun EatingOccasionSearchScreenCard(
                                 },
                                 onInsertFood = {
                                     keyboardController?.hide()
-                                    foodViewModel.onEvent(
+                                    calorieTrackerViewModel.onEvent(
                                         CalorieTrackerEvent.InsertFood(
                                             date,
                                             it.food,
@@ -201,8 +201,8 @@ fun EatingOccasionSearchScreenCard(
                                     )
                                 },
                                 onFoodItemHeaderExpanded = {
-                                    foodViewModel.onEvent(
-                                        CalorieTrackerEvent.FoodItemHeaderExpanded(it.food)
+                                    calorieTrackerViewModel.onEvent(
+                                        CalorieTrackerEvent.ExpandFoodItemHeader(it.food)
                                     )
                                 },
                                 expandedFromWhichState = stringResource(id = R.string.searched),
@@ -239,14 +239,14 @@ fun EatingOccasionSearchScreenCard(
                 takeWaterIntake = foodState.takeWaterIntake,
                 onChangeWaterMilliliters = { newMilliliters ->
                     if (newMilliliters.length <= 5) {
-                        foodViewModel.onEvent(
+                        calorieTrackerViewModel.onEvent(
                             CalorieTrackerEvent.ChangeWaterMilliliters(newMilliliters)
                         )
                     }
                 },
                 onInsertWater = {
                     keyboardController?.hide()
-                    foodViewModel.onEvent(
+                    calorieTrackerViewModel.onEvent(
                         CalorieTrackerEvent.InsertWater(
                             date,
                             foodState.takeWaterIntake
@@ -259,7 +259,7 @@ fun EatingOccasionSearchScreenCard(
                     WaterHeaderItemAdded(
                         waterIntakeInfoState = it,
                         onDeleteWater = {
-                            foodViewModel.onEvent(
+                            calorieTrackerViewModel.onEvent(
                                 CalorieTrackerEvent.DeleteWater(date, it)
                             )
                         }

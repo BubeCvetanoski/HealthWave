@@ -11,22 +11,25 @@ import healthWave.data.local.database.HealthWaveDatabase
 import healthWave.data.local.datastore.HealthWaveDataStore
 import healthWave.data.remote.HealthWaveApi
 import healthWave.data.repository.HealthWaveRepositoryImplemantation
-import healthWave.fragments.calorieTracker.domain.repository.FoodRepository
+import healthWave.fragments.calorieTracker.domain.repository.CalorieTrackerRepository
 import healthWave.fragments.calorieTracker.domain.useCase.DeleteFoodById
 import healthWave.fragments.calorieTracker.domain.useCase.DeleteWaterById
-import healthWave.fragments.calorieTracker.domain.useCase.FoodUseCases
+import healthWave.fragments.calorieTracker.domain.useCase.CalorieTrackerUseCases
 import healthWave.fragments.calorieTracker.domain.useCase.GetFoodByDate
 import healthWave.fragments.calorieTracker.domain.useCase.GetFoodByName
 import healthWave.fragments.calorieTracker.domain.useCase.GetWaterByDate
 import healthWave.fragments.calorieTracker.domain.useCase.InsertFood
 import healthWave.fragments.calorieTracker.domain.useCase.InsertWater
 import healthWave.fragments.calorieTracker.domain.useCase.SearchFood
-import healthWave.fragments.trainingTracker.domain.repository.ExerciseRepository
+import healthWave.fragments.trainingTracker.domain.repository.TrainingTrackerRepository
 import healthWave.fragments.trainingTracker.domain.useCase.AddExercise
 import healthWave.fragments.trainingTracker.domain.useCase.DeleteAllExercisesByDate
-import healthWave.fragments.trainingTracker.domain.useCase.ExerciseUseCases
+import healthWave.fragments.trainingTracker.domain.useCase.DeleteExercisesById
+import healthWave.fragments.trainingTracker.domain.useCase.GetExerciseIdsByNumberAndDate
+import healthWave.fragments.trainingTracker.domain.useCase.TrainingTrackerUseCases
 import healthWave.fragments.trainingTracker.domain.useCase.GetExercisesByDate
 import healthWave.fragments.trainingTracker.domain.useCase.UpdateExerciseByNumberAndDate
+import healthWave.fragments.trainingTracker.domain.useCase.UpdateExerciseNumberByIdAndDate
 import healthWave.launcher.domain.repository.DataStoreRepository
 import healthWave.launcher.domain.repository.UserRepository
 import healthWave.launcher.domain.useCase.database.AddUser
@@ -113,19 +116,22 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideExerciseUseCases(repository: ExerciseRepository): ExerciseUseCases {
-        return ExerciseUseCases(
+    fun provideExerciseUseCases(repository: TrainingTrackerRepository): TrainingTrackerUseCases {
+        return TrainingTrackerUseCases(
             addExercise = AddExercise(repository),
             getExercisesByDate = GetExercisesByDate(repository),
             updateExerciseByNumberAndDate = UpdateExerciseByNumberAndDate(repository),
-            deleteAllExercisesByDate = DeleteAllExercisesByDate(repository)
+            deleteAllExercisesByDate = DeleteAllExercisesByDate(repository),
+            getExerciseIdsByNumberAndDate = GetExerciseIdsByNumberAndDate(repository),
+            deleteExercisesById = DeleteExercisesById(repository),
+            updateExerciseNumberByIdAndDate = UpdateExerciseNumberByIdAndDate(repository)
         )
     }
 
     @Provides
     @Singleton
-    fun provideFoodUseCases(repository: FoodRepository): FoodUseCases {
-        return FoodUseCases(
+    fun provideFoodUseCases(repository: CalorieTrackerRepository): CalorieTrackerUseCases {
+        return CalorieTrackerUseCases(
             searchFood = SearchFood(repository),
             insertFood = InsertFood(repository),
             getFoodByDate = GetFoodByDate(repository),
@@ -145,13 +151,13 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideExerciseRepository(database: HealthWaveDatabase, api: HealthWaveApi): ExerciseRepository {
+    fun provideExerciseRepository(database: HealthWaveDatabase, api: HealthWaveApi): TrainingTrackerRepository {
         return HealthWaveRepositoryImplemantation(database.healthWaveDao, api)
     }
 
     @Provides
     @Singleton
-    fun provideFoodRepository(database: HealthWaveDatabase, api: HealthWaveApi): FoodRepository {
+    fun provideFoodRepository(database: HealthWaveDatabase, api: HealthWaveApi): CalorieTrackerRepository {
         return HealthWaveRepositoryImplemantation(database.healthWaveDao, api)
     }
 }
