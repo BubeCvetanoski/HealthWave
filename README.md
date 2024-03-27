@@ -23,7 +23,7 @@ Compose-destinations for navigation;
 Glide;
 
 Data structures used:
-Array;
 List;
-2D Array (Matrix);
+2D List (Matrix);
 HashMap;
+Stack;
