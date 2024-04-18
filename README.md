@@ -1,4 +1,4 @@
-Large-scaling Native Android application in the field of fitness, developed with Kotlin along with Jetpack Compose using CLEAN MVVM architecture, ROOM and Retrofit.
+Large-scaling Native Android application in the field of fitness, developed with Kotlin along with Jetpack Compose using CLEAN MVI architecture, ROOM and Retrofit.
 It serves the fitness enthusiasts and anyone that strives to stay active and thus track his/her progress via 3 main screens. Firstly you enter the required parameters for the calorie calculator (height, weight, gender, age, level of activity) 
 and choose your goal either Losing, Maintaining or Adding weight. Only then you are navigated to the main screens. The next time you enter the application, this info will not be required since it is remembered. The main 3 screens consist of:
 
